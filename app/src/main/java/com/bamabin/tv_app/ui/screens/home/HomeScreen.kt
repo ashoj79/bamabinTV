@@ -1,82 +1,84 @@
 package com.bamabin.tv_app.ui.screens.home
 
+import android.util.Log
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.Movie
-import androidx.compose.material.icons.outlined.PersonOutline
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
-import androidx.compose.material.icons.outlined.VideoCameraFront
-import androidx.compose.material.icons.outlined.Window
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.tv.material3.Border
+import androidx.tv.material3.Card
+import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.bamabin.tv_app.R
+import com.bamabin.tv_app.data.local.MenuIconType
+import com.bamabin.tv_app.data.local.MenuItem
 import com.bamabin.tv_app.ui.screens.main.MainScreen
+import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
+    coroutineScope: CoroutineScope,
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
+    val screenHeight = configuration.screenHeightDp
+    var padding = (screenHeight - 80 - 24 - homeViewModel.menuItems.size * 40) / (homeViewModel.menuItems.size - 1) / 2
+    padding = maxOf(8, padding)
 
     val selectedMenuIndex by homeViewModel.selectedMenuIndex.collectAsState()
 
     Row {
         MenuList(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width((screenWidth * 0.2).dp),
+            width = (screenWidth * 0.2).dp,
             menus = homeViewModel.menuItems,
             selectedIndex = selectedMenuIndex,
+            padding = padding
         ) { menuIndex ->
             homeViewModel.updateSelectedMenu(menuIndex)
         }
 
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width((screenWidth * 0.8).dp)
-        ){
-            MainScreen()
+        Box(modifier = Modifier.fillMaxSize()){
+            MainScreen(coroutineScope = coroutineScope)
         }
     }
 }
@@ -84,52 +86,117 @@ fun HomeScreen(
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun MenuList(
-    modifier: Modifier = Modifier,
-    menus: Map<String, ImageVector>,
+    width: Dp,
+    menus: List<MenuItem>,
     selectedIndex: Int,
+    padding: Int,
     onClick: (index: Int) -> Unit
 ) {
-    var focusedItem by remember { mutableStateOf(-1) }
+    var focusedIndex by remember { mutableIntStateOf(0) }
+    val scrollState = rememberScrollState()
+    val firstMenuFocusRequester = FocusRequester()
+    val anotherMenuFocusRequester = FocusRequester()
 
-    val focusRequester = remember { FocusRequester() }
+    val widthAnim by animateDpAsState(
+        targetValue = if (focusedIndex > -1) width else 80.dp,
+        animationSpec = TweenSpec(durationMillis = 100)
+    )
+
+    LaunchedEffect(focusedIndex) {
+        if (focusedIndex == 0)
+            scrollState.animateScrollTo(0)
+        else if (focusedIndex == menus.size - 1)
+            scrollState.animateScrollTo(scrollState.maxValue)
+    }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+        firstMenuFocusRequester.requestFocus()
     }
-    
-    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
-        Image(painter = painterResource(id = R.drawable.logo_dark), contentDescription = "", modifier = Modifier.height(80.dp), contentScale = ContentScale.FillWidth)
+
+    Column(modifier = Modifier
+        .width(widthAnim)
+        .fillMaxHeight()
+        .verticalScroll(scrollState)
+        .padding(horizontal = 16.dp)
+        .padding(bottom = 8.dp)
+    ) {
+
+        Image(painter = painterResource(id = R.drawable.logo_dark),
+            contentDescription = "",
+            modifier = Modifier.height(if (focusedIndex > -1) 80.dp else 0.dp),
+            contentScale = ContentScale.FillWidth
+        )
+
+        Image(painter = painterResource(id = R.drawable.small_logo),
+            contentDescription = "",
+            modifier = Modifier
+                .height(if (focusedIndex == -1) 80.dp else 0.dp)
+                .width(80.dp)
+        )
         
-        menus.keys.forEachIndexed { index, s ->
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .background(if (focusedItem == index) Color.Gray.copy(alpha = 0.5f) else Color.Transparent)
-                .onFocusChanged {
-                    if (it.isFocused) focusedItem = index
-                    else if (focusedItem == index) focusedItem = -1
-                }
-                .focusRequester(focusRequester)
-                .focusable()
-                .clickable { onClick(index) }
-                .padding(top = 12.dp, bottom = 12.dp, start = 32.dp)
+        menus.forEachIndexed { index, menu ->
+            Card(
+                onClick = { onClick(index) },
+                colors = CardDefaults.colors(
+                    containerColor = Color.Transparent,
+                    focusedContainerColor = Color.White
+                ),
+                border = CardDefaults.border(
+                    focusedBorder = Border.None
+                ),
+                modifier = Modifier
+                    .padding(vertical = padding.dp)
+                    .onFocusChanged {
+                        if (it.isFocused) focusedIndex = index
+                        else if (focusedIndex > -1) focusedIndex = -1
+                    }
+                    .focusRequester(if (menu.isPrimary) firstMenuFocusRequester else anotherMenuFocusRequester)
             ) {
-                Icon(
-                    imageVector = menus[s]!!,
-                    contentDescription = "",
-                    tint = if (selectedIndex == index) Color.White else Color.Gray
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = s,
-                    style = TextStyle(
-                        color = if (selectedIndex == index) Color.White else Color.Gray,
-                        fontWeight = if (selectedIndex == index) FontWeight.W600 else FontWeight.W500,
-                        fontSize = TextUnit(
-                            if (selectedIndex == index) 16f else 14f,
-                            TextUnitType.Sp
+                Row(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (menu.type == MenuIconType.ICON) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            imageVector = menu.getIcon(selectedIndex == index),
+                            contentDescription = "",
+                            tint = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
                         )
+                    } else if (menu.type == MenuIconType.SVG) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(id = menu.getImage()),
+                            contentDescription = "",
+                            tint = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
+                        )
+                    } else {
+                        Image(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(id = menu.getImage(selectedIndex == index)),
+                            contentDescription = "",
+                            colorFilter = ColorFilter.tint(
+                                color = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
+                            ),
+                            alpha = 1f
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = menu.title,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray,
+                            fontWeight = if (selectedIndex == index) FontWeight.W700 else FontWeight.W600,
+                            fontSize = TextUnit(
+                                16f,
+                                TextUnitType.Sp
+                            )
+                        ),
+                        maxLines = 1
                     )
-                )
+                }
             }
         }
     }
