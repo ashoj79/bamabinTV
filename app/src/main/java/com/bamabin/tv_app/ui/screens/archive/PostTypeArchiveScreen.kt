@@ -1,0 +1,215 @@
+package com.bamabin.tv_app.ui.screens.archive
+
+import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavHostController
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.tv.foundation.lazy.grid.TvGridCells
+import androidx.tv.foundation.lazy.grid.TvGridItemSpan
+import androidx.tv.foundation.lazy.grid.TvLazyVerticalGrid
+import androidx.tv.foundation.lazy.list.TvLazyListState
+import androidx.tv.foundation.lazy.list.TvLazyRow
+import androidx.tv.foundation.lazy.list.items
+import androidx.tv.foundation.lazy.list.rememberTvLazyListState
+import androidx.tv.material3.Border
+import androidx.tv.material3.Button
+import androidx.tv.material3.ButtonDefaults
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Text
+import com.bamabin.tv_app.data.local.PostType
+import com.bamabin.tv_app.data.local.TempDB
+import com.bamabin.tv_app.data.remote.model.videos.Genre
+import com.bamabin.tv_app.ui.widgeta.LoadingWidget
+import com.bamabin.tv_app.ui.widgeta.MovieCard
+
+@Composable
+fun PostTypeArchiveScreen(
+    postType: PostType,
+    navHostController: NavHostController,
+    postTypeArchiveViewModel: PostTypeArchiveViewModel = hiltViewModel()
+) {
+    val isLoading by postTypeArchiveViewModel.isLoading.collectAsState()
+
+    LaunchedEffect(Unit) {
+        postTypeArchiveViewModel.setPostType(postType)
+    }
+
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 16.dp)
+    ) {
+        Text(
+            text = postType.title,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        )
+
+        if (postTypeArchiveViewModel.posts.isNotEmpty()){
+            TvLazyVerticalGrid(
+                columns = TvGridCells.Fixed(6),
+                modifier = Modifier.padding(top = 24.dp),
+            ) {
+                item (
+                    span = { TvGridItemSpan(6) }
+                ) {
+                    Filters()
+                }
+
+                items(postTypeArchiveViewModel.posts.size) {
+                    MovieCard(postTypeArchiveViewModel.posts[it], Modifier.padding(bottom = 20.dp))
+
+                    if (it == postTypeArchiveViewModel.posts.lastIndex){
+                        postTypeArchiveViewModel.fetchData()
+                    }
+                }
+                item(
+                    span = { TvGridItemSpan(6) }
+                ){
+                    if (isLoading)
+                        LoadingWidget(showText = false)
+                }
+            }
+        } else if (isLoading) {
+            LoadingWidget()
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun Filters(
+    postTypeArchiveViewModel: PostTypeArchiveViewModel = hiltViewModel()
+) {
+    val selectedOrder by postTypeArchiveViewModel.order.collectAsState()
+
+    Column(
+        modifier = Modifier.padding(bottom = 32.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(end = 16.dp, top = 16.dp)
+                .background(
+                    color = Color(0xFF333333),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(vertical = 4.dp)
+        ) {
+            Button(
+                colors = ButtonDefaults.colors(
+                    containerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121),
+                    focusedContainerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121)
+                ),
+                border = ButtonDefaults.border(
+                    border = Border.None,
+                    focusedBorder = Border(
+                        border = BorderStroke(2.dp, Color.White),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                ),
+                shape = ButtonDefaults.shape(
+                    shape = RoundedCornerShape(12.dp),
+                    focusedShape = RoundedCornerShape(12.dp)
+                ),
+                modifier = Modifier.padding(horizontal = 4.dp),
+                onClick = { postTypeArchiveViewModel.setOrder(1) }) {
+                Text(
+                    text = "سال انتشار",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = if (selectedOrder == 1) Color(0xFF3F310E) else Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+            Button(
+                colors = ButtonDefaults.colors(
+                    containerColor = if (selectedOrder == 2) Color(0xFFF6AD12) else Color(0xFF212121),
+                    focusedContainerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121)
+                ),
+                border = ButtonDefaults.border(
+                    border = Border.None,
+                    focusedBorder = Border(
+                        border = BorderStroke(2.dp, Color.White),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                ),
+                shape = ButtonDefaults.shape(
+                    shape = RoundedCornerShape(12.dp),
+                    focusedShape = RoundedCornerShape(12.dp)
+                ),
+                modifier = Modifier.padding(horizontal = 4.dp),
+                onClick = { postTypeArchiveViewModel.setOrder(2) }) {
+                Text(
+                    text = "بروزترین ها",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = if (selectedOrder == 2) Color(0xFF3F310E) else Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+            Button(
+                colors = ButtonDefaults.colors(
+                    containerColor = if (selectedOrder == 3) Color(0xFFF6AD12) else Color(0xFF212121),
+                    focusedContainerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121)
+                ),
+                border = ButtonDefaults.border(
+                    border = Border.None,
+                    focusedBorder = Border(
+                        border = BorderStroke(2.dp, Color.White),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                ),
+                shape = ButtonDefaults.shape(
+                    shape = RoundedCornerShape(12.dp),
+                    focusedShape = RoundedCornerShape(12.dp)
+                ),
+                modifier = Modifier.padding(horizontal = 4.dp),
+                onClick = { postTypeArchiveViewModel.setOrder(3) }) {
+                Text(
+                    text = "امتیاز IMDB",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = if (selectedOrder == 3) Color(0xFF3F310E) else Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+        }
+    }
+}

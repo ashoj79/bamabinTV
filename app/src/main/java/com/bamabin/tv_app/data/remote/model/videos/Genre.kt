@@ -8,5 +8,6 @@ data class Genre(
     val link: String,
     val icon: String,
     @SerializedName("background_url")
-    val backgroundUrl: String
+    val backgroundUrl: String,
+    val count: Int
 )

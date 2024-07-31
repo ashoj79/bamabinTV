@@ -10,10 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
 import com.bamabin.tv_app.ui.theme.BamabinTVTheme
+import com.bamabin.tv_app.utils.Routes
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -23,6 +29,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val coroutineScope = rememberCoroutineScope()
+            val navHostController = rememberNavController()
 
             BamabinTVTheme {
                 Surface(
@@ -30,7 +37,29 @@ class MainActivity : ComponentActivity() {
                     shape = RectangleShape
                 ) {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-                        HomeScreen(coroutineScope)
+                        NavHost(
+                            navController = navHostController,
+                            startDestination = Routes.START.name
+                        ) {
+                            composable(route = Routes.START.name) {
+                                HomeScreen(coroutineScope, navHostController)
+                            }
+
+//                            composable(
+//                                route = "${Routes.ARCHIVE}/{post_type}",
+//                                arguments = listOf(
+//                                    navArgument("post_type") {
+//                                        type = NavType.StringType
+//                                        defaultValue = ""
+//                                    }
+//                                )
+//                            ) { backStackEntry ->
+//                                val typeName = backStackEntry.arguments?.getString("post_type") ?: ""
+//                                val postType = try { PostType.valueOf(typeName) } catch (_:Exception) { null }
+//
+//                                ArchiveScreen(postType, navHostController)
+//                            }
+                        }
                     }
                 }
             }

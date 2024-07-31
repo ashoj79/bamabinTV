@@ -38,10 +38,7 @@ data class HomeSection(
                         )
                     )
                 }
-                val title = postData.getString("title").replace("دانلود فیلم", "")
-                    .replace("دانلود سریال", "").replace("دانلود سریال", "")
-                    .replace("دانلود انیمیشن سریالی", "").replace("دانلود انیمیشن", "")
-                    .replace("دانلود انیمه", "").replace("دانلود مستند", "")
+                val title = postData.getString("title")
                 var imdbRate = postData.getString("imdb_rate_movie")
                 if (imdbRate.isEmpty()) imdbRate = " - "
 
@@ -61,12 +58,3 @@ data class HomeSection(
         }
     }
 }
-
-data class Post(
-    val id: Int,
-    val title: String,
-    val thumbnail: String,
-    val imdbRate: String,
-    val hasAudio: Boolean,
-    val genres: List<Genre>
-)

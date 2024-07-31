@@ -1,6 +1,5 @@
 package com.bamabin.tv_app.ui.screens.home
 
-import android.util.Log
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,7 +29,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -41,6 +38,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.tv.material3.Border
 import androidx.tv.material3.Card
 import androidx.tv.material3.CardDefaults
@@ -51,12 +49,15 @@ import androidx.tv.material3.Text
 import com.bamabin.tv_app.R
 import com.bamabin.tv_app.data.local.MenuIconType
 import com.bamabin.tv_app.data.local.MenuItem
+import com.bamabin.tv_app.data.local.PostType
+import com.bamabin.tv_app.ui.screens.archive.PostTypeArchiveScreen
 import com.bamabin.tv_app.ui.screens.main.MainScreen
 import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun HomeScreen(
     coroutineScope: CoroutineScope,
+    navHostController: NavHostController,
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val configuration = LocalConfiguration.current
@@ -78,7 +79,13 @@ fun HomeScreen(
         }
 
         Box(modifier = Modifier.fillMaxSize()){
-            MainScreen(coroutineScope = coroutineScope)
+            when(selectedMenuIndex) {
+                6 -> PostTypeArchiveScreen(postType = PostType.MOVIE, navHostController = navHostController)
+                7 -> PostTypeArchiveScreen(postType = PostType.SERIES, navHostController = navHostController)
+                8 -> PostTypeArchiveScreen(postType = PostType.ANIMATION, navHostController = navHostController)
+                9 -> PostTypeArchiveScreen(postType = PostType.ANIME, navHostController = navHostController)
+                else -> MainScreen(coroutineScope = coroutineScope)
+            }
         }
     }
 }
