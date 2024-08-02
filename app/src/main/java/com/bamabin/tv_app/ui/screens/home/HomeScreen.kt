@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.tv.material3.Border
@@ -51,6 +52,7 @@ import com.bamabin.tv_app.data.local.MenuIconType
 import com.bamabin.tv_app.data.local.MenuItem
 import com.bamabin.tv_app.data.local.PostType
 import com.bamabin.tv_app.ui.screens.archive.PostTypeArchiveScreen
+import com.bamabin.tv_app.ui.screens.genres_archive.GenresArchive
 import com.bamabin.tv_app.ui.screens.main.MainScreen
 import kotlinx.coroutines.CoroutineScope
 
@@ -58,7 +60,7 @@ import kotlinx.coroutines.CoroutineScope
 fun HomeScreen(
     coroutineScope: CoroutineScope,
     navHostController: NavHostController,
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel = hiltViewModel()
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
@@ -80,6 +82,7 @@ fun HomeScreen(
 
         Box(modifier = Modifier.fillMaxSize()){
             when(selectedMenuIndex) {
+                3 -> GenresArchive(navHostController = navHostController)
                 6 -> PostTypeArchiveScreen(postType = PostType.MOVIE, navHostController = navHostController)
                 7 -> PostTypeArchiveScreen(postType = PostType.SERIES, navHostController = navHostController)
                 8 -> PostTypeArchiveScreen(postType = PostType.ANIMATION, navHostController = navHostController)

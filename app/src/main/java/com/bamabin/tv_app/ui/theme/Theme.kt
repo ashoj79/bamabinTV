@@ -14,7 +14,8 @@ fun BamabinTVTheme(
     val colorScheme = darkColorScheme(
         primary = Blue,
         secondary = PurpleGrey80,
-        tertiary = Pink80
+        tertiary = Pink80,
+        background = DarkBG
     )
 
     MaterialTheme(

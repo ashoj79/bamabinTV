@@ -7,10 +7,10 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface VideosApiService {
-    @GET("home/sections")
+    @GET("api/home/sections")
     suspend fun getHomeSections(): ResponseBody
 
-    @GET("archive/post_type")
+    @GET("api/archive/post_type")
     suspend fun getPosts(
         @Query("type") type: String,
         @Query("order_by") orderBy: String,

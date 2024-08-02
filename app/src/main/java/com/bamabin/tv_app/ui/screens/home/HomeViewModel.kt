@@ -37,7 +37,7 @@ class HomeViewModel @Inject constructor(): ViewModel() {
         MenuItem("ورود", Icons.Outlined.Login, Icons.Filled.Login),
         MenuItem("خانه", Icons.Outlined.Home, Icons.Filled.Home, true),
         MenuItem("لیست ها", Icons.Outlined.Menu, Icons.Filled.Menu),
-        MenuItem("ژانر ها", Icons.Outlined.Window, Icons.Filled.Window),
+        MenuItem("دسته بندی ها", Icons.Outlined.Window, Icons.Filled.Window),
         MenuItem("جستجو", Icons.Outlined.Search, Icons.Filled.Search),
         MenuItem("پنل کاربری", Icons.Outlined.PersonOutline, Icons.Filled.Person),
         MenuItem("فیلم ها", Icons.Outlined.Movie, Icons.Filled.Movie),

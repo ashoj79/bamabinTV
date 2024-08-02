@@ -25,16 +25,7 @@ class VideosRepository @Inject constructor(
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
 
             val response = videosApiService.getHomeSections()
-            val responseText = response.charStream().readText()
-            var genresData = JSONObject(responseText).getJSONArray("result")
-            genresData = genresData.getJSONObject(genresData.length() - 1).getJSONArray("genres")
-            val genres = mutableListOf<Genre>()
-            for (i in 0 until genresData.length()) {
-                genres.add(Gson().fromJson(genresData.getJSONObject(i).toString(), Genre::class.java))
-            }
-            TempDB.saveGenres(genres)
-
-            val data=HomeSection.createFromJson(responseText)
+            val data=HomeSection.createFromJson(response.charStream().readText())
             DataResult.DataSuccess(data)
         } catch (e: HttpException){
             DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
@@ -49,6 +40,9 @@ class VideosRepository @Inject constructor(
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
 
             val response = videosApiService.getPosts(type.typeName, orderBy, genre, page)
+            if (!response.status)
+                return DataResult.DataError(response.message ?: "")
+
             DataResult.DataSuccess(response.results ?: emptyList())
         } catch (e: HttpException){
             DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")

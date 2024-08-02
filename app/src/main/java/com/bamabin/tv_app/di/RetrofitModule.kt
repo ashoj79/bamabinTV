@@ -1,6 +1,7 @@
 package com.bamabin.tv_app.di
 
 import com.bamabin.tv_app.data.remote.RequestInterceptor
+import com.bamabin.tv_app.data.remote.api_service.AppApiService
 import com.bamabin.tv_app.data.remote.api_service.VideosApiService
 import com.bamabin.tv_app.utils.API_BASE_URL
 import dagger.Module
@@ -28,11 +29,14 @@ object RetrofitModule {
     @Provides
     fun provideRetrofit(client: OkHttpClient)=
         Retrofit.Builder()
-            .baseUrl(API_BASE_URL)
+            .baseUrl("https://bamabin.com")
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
 
     @Provides
     fun provideVideosApiService(retrofit: Retrofit)=retrofit.create(VideosApiService::class.java)
+
+    @Provides
+    fun provideAppApiService(retrofit: Retrofit)=retrofit.create(AppApiService::class.java)
 }

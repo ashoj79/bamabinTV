@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
+import com.bamabin.tv_app.ui.screens.splash.SplashScreen
 import com.bamabin.tv_app.ui.theme.BamabinTVTheme
 import com.bamabin.tv_app.utils.Routes
 import dagger.hilt.android.AndroidEntryPoint
@@ -39,8 +40,12 @@ class MainActivity : ComponentActivity() {
                     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
                         NavHost(
                             navController = navHostController,
-                            startDestination = Routes.START.name
+                            startDestination = Routes.SPLASH.name
                         ) {
+                            composable(route = Routes.SPLASH.name) {
+                                SplashScreen(navHostController)
+                            }
+
                             composable(route = Routes.START.name) {
                                 HomeScreen(coroutineScope, navHostController)
                             }
