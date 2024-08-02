@@ -82,6 +82,10 @@ class PostTypeArchiveViewModel @Inject constructor(
     }
 
     private fun getOrderBy(): String {
-        return "date"
+        return when(_order.value) {
+            1 -> "release_year"
+            3 -> "imdb"
+            else -> "date"
+        }
     }
 }
