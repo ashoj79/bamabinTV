@@ -77,4 +77,6 @@
 -dontwarn sun.misc.**
 
 
--keep class com.bamabin.tv_app.data.remote.** { <fields>; }
+-keep class com.bamabin.tv_app.data.** { <fields>;<methods>; }
+-keep class com.bamabin.tv_app.utils.AESHelper { <fields>;<methods>;}
+-keep class com.bamabin.tv_app.repo.AppRepository { <fields>;<methods>;}

@@ -31,9 +31,11 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.bamabin.tv_app.data.remote.model.videos.HomeSection
+import com.bamabin.tv_app.ui.widgeta.ErrorDialog
 import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.ui.widgeta.MoreCard
 import com.bamabin.tv_app.ui.widgeta.MovieCard
+import com.bamabin.tv_app.utils.DataResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -42,7 +44,7 @@ fun MainScreen(
     mainViewModel: MainViewModel = hiltViewModel(),
     coroutineScope: CoroutineScope
 ) {
-    val isLoading by mainViewModel.isLoading.collectAsState()
+    val result by mainViewModel.homeSections.collectAsState()
 
     val mainColumnController = rememberScrollState()
     var scrollState by remember { mutableIntStateOf(0) }
@@ -58,7 +60,7 @@ fun MainScreen(
         }
     }
 
-    if (!isLoading) {
+    if (result is DataResult.DataSuccess) {
         Column(
             modifier = Modifier
                 .verticalScroll(mainColumnController)
@@ -66,15 +68,15 @@ fun MainScreen(
                     isRendered = true
                 }
         ) {
-            for (it in 0 until mainViewModel.homeSections.size) {
+            for (it in 0 until result.data!!.size) {
                 Section(
-                    homeSection = mainViewModel.homeSections[it],
+                    homeSection = result.data!![it],
                     modifier = Modifier.padding(
-                        bottom = if (it == mainViewModel.homeSections.size - 1) 32.dp else 16.dp
+                        bottom = if (it == result.data!!.size - 1) 32.dp else 16.dp
                     ),
                     onListHovered = {
                         scrollState = when (it) {
-                            mainViewModel.homeSections.size - 1 -> 2
+                            result.data!!.size - 1 -> 2
                             0 -> 1
                             else -> 0
                         }
@@ -86,6 +88,12 @@ fun MainScreen(
 
     if (!isRendered) {
         LoadingWidget()
+    }
+
+    if (result is DataResult.DataError) {
+        ErrorDialog(message = result.message) {
+            mainViewModel.getSection()
+        }
     }
 }
 

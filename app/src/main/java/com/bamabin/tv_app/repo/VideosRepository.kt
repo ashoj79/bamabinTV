@@ -1,16 +1,11 @@
 package com.bamabin.tv_app.repo
 
-import android.util.Log
 import com.bamabin.tv_app.data.local.PostType
-import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.data.remote.api_service.VideosApiService
-import com.bamabin.tv_app.data.remote.model.videos.Genre
 import com.bamabin.tv_app.data.remote.model.videos.HomeSection
 import com.bamabin.tv_app.data.remote.model.videos.Post
 import com.bamabin.tv_app.utils.ConnectionChecker
 import com.bamabin.tv_app.utils.DataResult
-import com.google.gson.Gson
-import org.json.JSONObject
 import retrofit2.HttpException
 import javax.inject.Inject
 

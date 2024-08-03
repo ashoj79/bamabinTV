@@ -25,12 +25,6 @@ class SplashViewModel @Inject constructor(
 
     fun fetchData() = viewModelScope.launch {
         _result.value = DataResult.DataLoading()
-        val result = repository.getBaseUrl()
-        if (result is DataResult.DataError) {
-            _result.value = DataResult.DataError(result.message)
-            return@launch
-        }
-
         _result.value = repository.getStartupData()
     }
 }
