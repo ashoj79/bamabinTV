@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(route = Routes.START.name) {
-                                HomeScreen(coroutineScope, navHostController)
+                                HomeScreen(navHostController)
                             }
 
 //                            composable(

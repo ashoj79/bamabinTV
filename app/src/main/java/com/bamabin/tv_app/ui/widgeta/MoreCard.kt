@@ -3,7 +3,6 @@ package com.bamabin.tv_app.ui.widgeta
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,54 +49,50 @@ fun MoreCard(modifier: Modifier = Modifier) {
         modifier = modifier
             .padding(end = 16.dp)
             .onFocusChanged { isFocused = it.isFocused }
+            .width(120.dp)
+            .height(250.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .width(120.dp)
-                .height(250.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(190.dp)
-                    .background(color = Color(0xFF5F5E5E), shape = RoundedCornerShape(8.dp))
-                    .border(
-                        width = if (isFocused) 2.dp else 0.dp,
-                        color = if (isFocused) Color.White else Color.Transparent,
-                        shape = RoundedCornerShape(8.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.MoreHoriz,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .background(
-                            color = Color(0xFF9B9B9B),
-                            shape = CircleShape
-                        )
-                        .padding(all = 16.dp),
-                    tint = Color.White,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = "مشاهده بیشتر",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = TextUnit(
-                        12f,
-                        TextUnitType.Sp
-                    ),
-                    color = if (isFocused) Color.White else Color.White.copy(alpha = 0.6f)
+                .fillMaxWidth()
+                .height(190.dp)
+                .background(color = Color(0xFF5F5E5E), shape = RoundedCornerShape(8.dp))
+                .border(
+                    width = if (isFocused) 2.dp else 0.dp,
+                    color = if (isFocused) Color.White else Color.Transparent,
+                    shape = RoundedCornerShape(8.dp)
                 ),
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.MoreHoriz,
+                contentDescription = "",
+                modifier = Modifier
+                    .size(80.dp)
+                    .background(
+                        color = Color(0xFF9B9B9B),
+                        shape = CircleShape
+                    )
+                    .padding(all = 16.dp),
+                tint = Color.White,
             )
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "مشاهده بیشتر",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = TextUnit(
+                    12f,
+                    TextUnitType.Sp
+                ),
+                color = if (isFocused) Color.White else Color.White.copy(alpha = 0.6f)
+            ),
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }

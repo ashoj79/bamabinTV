@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.tv.material3.Border
 import androidx.tv.material3.Card
@@ -58,7 +57,6 @@ import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun HomeScreen(
-    coroutineScope: CoroutineScope,
     navHostController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -87,7 +85,7 @@ fun HomeScreen(
                 7 -> PostTypeArchiveScreen(postType = PostType.SERIES, navHostController = navHostController)
                 8 -> PostTypeArchiveScreen(postType = PostType.ANIMATION, navHostController = navHostController)
                 9 -> PostTypeArchiveScreen(postType = PostType.ANIME, navHostController = navHostController)
-                else -> MainScreen(coroutineScope = coroutineScope)
+                else -> MainScreen()
             }
         }
     }
