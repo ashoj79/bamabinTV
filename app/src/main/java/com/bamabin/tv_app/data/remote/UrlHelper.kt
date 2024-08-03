@@ -29,4 +29,10 @@ class UrlHelper @Inject constructor() {
 
     fun getDecryptedUrl() = url?.let { aesHelper.decrypt(it).split(";").first() } ?: ""
     fun getDecryptedCert() = cert?.let { aesHelper.decrypt(it) } ?: ""
+
+    fun clear() {
+        url = null
+        cert = null
+        allowVPN = true
+    }
 }
