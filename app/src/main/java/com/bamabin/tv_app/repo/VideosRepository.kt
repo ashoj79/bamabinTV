@@ -4,6 +4,7 @@ import com.bamabin.tv_app.data.local.PostType
 import com.bamabin.tv_app.data.remote.api_service.VideosApiService
 import com.bamabin.tv_app.data.remote.model.videos.HomeSection
 import com.bamabin.tv_app.data.remote.model.videos.Post
+import com.bamabin.tv_app.data.remote.model.videos.SearchResult
 import com.bamabin.tv_app.utils.ConnectionChecker
 import com.bamabin.tv_app.utils.DataResult
 import retrofit2.HttpException
@@ -39,6 +40,23 @@ class VideosRepository @Inject constructor(
                 return DataResult.DataError(response.message ?: "")
 
             DataResult.DataSuccess(response.results ?: emptyList())
+        } catch (e: HttpException){
+            DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
+        } catch (e: Exception){
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
+    suspend fun search(s: String): DataResult<SearchResult> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = videosApiService.search(s)
+            if (!response.status)
+                return DataResult.DataError(response.message ?: "")
+
+            DataResult.DataSuccess(response.getMainResult()!!)
         } catch (e: HttpException){
             DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
         } catch (e: Exception){

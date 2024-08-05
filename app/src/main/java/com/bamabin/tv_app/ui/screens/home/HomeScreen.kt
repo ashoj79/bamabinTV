@@ -53,7 +53,7 @@ import com.bamabin.tv_app.data.local.PostType
 import com.bamabin.tv_app.ui.screens.archive.PostTypeArchiveScreen
 import com.bamabin.tv_app.ui.screens.genres_archive.GenresArchive
 import com.bamabin.tv_app.ui.screens.main.MainScreen
-import kotlinx.coroutines.CoroutineScope
+import com.bamabin.tv_app.ui.screens.search.SearchScreen
 
 @Composable
 fun HomeScreen(
@@ -81,6 +81,7 @@ fun HomeScreen(
         Box(modifier = Modifier.fillMaxSize()){
             when(selectedMenuIndex) {
                 3 -> GenresArchive(navHostController = navHostController)
+                4 -> SearchScreen(navHostController = navHostController)
                 6 -> PostTypeArchiveScreen(postType = PostType.MOVIE, navHostController = navHostController)
                 7 -> PostTypeArchiveScreen(postType = PostType.SERIES, navHostController = navHostController)
                 8 -> PostTypeArchiveScreen(postType = PostType.ANIMATION, navHostController = navHostController)
@@ -198,7 +199,7 @@ fun MenuList(
                             color = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray,
                             fontWeight = if (selectedIndex == index) FontWeight.W700 else FontWeight.W600,
                             fontSize = TextUnit(
-                                16f,
+                                14f,
                                 TextUnitType.Sp
                             )
                         ),
