@@ -1,18 +1,13 @@
 package com.bamabin.tv_app.data.remote
 
 import android.content.Context
+import com.bamabin.tv_app.data.local.TempDB
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Response
-import java.io.ByteArrayInputStream
-import java.io.IOException
-import java.net.URL
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.net.ssl.HttpsURLConnection
 
 class RequestInterceptor @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -43,6 +38,7 @@ class RequestInterceptor @Inject constructor(
         request = request.newBuilder()
             .url(urlRequest)
             .addHeader("BAMABIN_TV", "1")
+            .addHeader("BAMABIN_API_KEY", TempDB.token)
             .build()
 
         if (UrlHelper.url == null) {

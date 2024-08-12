@@ -2,8 +2,8 @@ package com.bamabin.tv_app.di
 
 import com.bamabin.tv_app.data.remote.RequestInterceptor
 import com.bamabin.tv_app.data.remote.api_service.AppApiService
+import com.bamabin.tv_app.data.remote.api_service.UserApiService
 import com.bamabin.tv_app.data.remote.api_service.VideosApiService
-import com.bamabin.tv_app.utils.API_BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,4 +39,7 @@ object RetrofitModule {
 
     @Provides
     fun provideAppApiService(retrofit: Retrofit)=retrofit.create(AppApiService::class.java)
+
+    @Provides
+    fun provideAppUserService(retrofit: Retrofit)=retrofit.create(UserApiService::class.java)
 }

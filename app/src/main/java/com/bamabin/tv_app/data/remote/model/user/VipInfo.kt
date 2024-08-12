@@ -7,6 +7,13 @@ data class VipInfo(
     val isVip: Boolean,
     @SerializedName("start_time")
     val startTime: Int,
-    @SerializedName("end_time")
+    @SerializedName("expire_time")
     val endTime: Int
-)
+) {
+    fun getVipDays(): Int {
+        return if (!isVip || endTime <= startTime) 0
+        else {
+            (endTime - startTime) / 3600 / 24
+        }
+    }
+}

@@ -94,6 +94,8 @@ dependencies {
     implementation(libs.compose.navigation)
     implementation(libs.paging.runtime)
     implementation(libs.paging.compose)
+    implementation(libs.qrcode)
+    implementation(libs.socketio)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)

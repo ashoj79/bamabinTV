@@ -7,7 +7,7 @@ class UrlHelper @Inject constructor() {
     companion object {
         var url: String? = null
             private set
-        var cert: String? = null
+        var socketUrl: String? = null
             private set
         var allowVPN: Boolean = true
             private set
@@ -24,15 +24,14 @@ class UrlHelper @Inject constructor() {
 
         url = parts[0]
         allowVPN = baseUrlParts[1] == "1"
-        cert = parts[1]
+        socketUrl = parts[1]
     }
 
     fun getDecryptedUrl() = url?.let { aesHelper.decrypt(it).split(";").first() } ?: ""
-    fun getDecryptedCert() = cert?.let { aesHelper.decrypt(it) } ?: ""
+    fun getDecryptedSocketUrl() = socketUrl?.let { aesHelper.decrypt(it) } ?: ""
 
     fun clear() {
         url = null
-        cert = null
         allowVPN = true
     }
 }

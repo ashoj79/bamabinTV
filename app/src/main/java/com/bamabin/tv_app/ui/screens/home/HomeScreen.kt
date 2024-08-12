@@ -3,18 +3,23 @@ package com.bamabin.tv_app.ui.screens.home
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.PersonPin
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,6 +38,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -46,46 +52,77 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.bamabin.tv_app.BuildConfig
 import com.bamabin.tv_app.R
 import com.bamabin.tv_app.data.local.MenuIconType
 import com.bamabin.tv_app.data.local.MenuItem
+import com.bamabin.tv_app.data.local.MenuPage
 import com.bamabin.tv_app.data.local.PostType
+import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.ui.screens.archive.PostTypeArchiveScreen
 import com.bamabin.tv_app.ui.screens.genres_archive.GenresArchive
 import com.bamabin.tv_app.ui.screens.main.MainScreen
 import com.bamabin.tv_app.ui.screens.search.SearchScreen
+import com.bamabin.tv_app.utils.Routes
 
 @Composable
 fun HomeScreen(
     navHostController: NavHostController,
     homeViewModel: HomeViewModel = hiltViewModel()
 ) {
+    val isLogin by TempDB.isLogin.collectAsState()
+    val menuItems = homeViewModel.getMenuItems(isLogin)
+
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
-    var padding = (screenHeight - 80 - 24 - homeViewModel.menuItems.size * 40) / (homeViewModel.menuItems.size - 1) / 2
+    var padding = (screenHeight - 80 - 24 - menuItems.size * 40) / (menuItems.size - 1) / 2
     padding = maxOf(8, padding)
 
     val selectedMenuIndex by homeViewModel.selectedMenuIndex.collectAsState()
 
+    LaunchedEffect(isLogin) {
+        if (isLogin) homeViewModel.updateSelectedMenu(0)
+        else homeViewModel.updateSelectedMenu(1)
+    }
+
     Row {
         MenuList(
             width = (screenWidth * 0.2).dp,
-            menus = homeViewModel.menuItems,
+            menus = menuItems,
             selectedIndex = selectedMenuIndex,
-            padding = padding
+            padding = padding,
+            isLogin = isLogin
         ) { menuIndex ->
-            homeViewModel.updateSelectedMenu(menuIndex)
+            menuItems[menuIndex].route?.let {
+                navHostController.navigate(it)
+            } ?: homeViewModel.updateSelectedMenu(menuIndex)
         }
 
-        Box(modifier = Modifier.fillMaxSize()){
-            when(selectedMenuIndex) {
-                3 -> GenresArchive(navHostController = navHostController)
-                4 -> SearchScreen(navHostController = navHostController)
-                6 -> PostTypeArchiveScreen(postType = PostType.MOVIE, navHostController = navHostController)
-                7 -> PostTypeArchiveScreen(postType = PostType.SERIES, navHostController = navHostController)
-                8 -> PostTypeArchiveScreen(postType = PostType.ANIMATION, navHostController = navHostController)
-                9 -> PostTypeArchiveScreen(postType = PostType.ANIME, navHostController = navHostController)
+        Box(modifier = Modifier.fillMaxSize()) {
+            when (menuItems[selectedMenuIndex].page) {
+                MenuPage.GENRES -> GenresArchive(navHostController = navHostController)
+                MenuPage.SEARCH -> SearchScreen(navHostController = navHostController)
+                MenuPage.MOVIES -> PostTypeArchiveScreen(
+                    postType = PostType.MOVIE,
+                    navHostController = navHostController
+                )
+
+                MenuPage.SERIES -> PostTypeArchiveScreen(
+                    postType = PostType.SERIES,
+                    navHostController = navHostController
+                )
+
+                MenuPage.ANIMATIONS -> PostTypeArchiveScreen(
+                    postType = PostType.ANIMATION,
+                    navHostController = navHostController
+                )
+
+                MenuPage.ANIME -> PostTypeArchiveScreen(
+                    postType = PostType.ANIME,
+                    navHostController = navHostController
+                )
+
                 else -> MainScreen()
             }
         }
@@ -99,6 +136,7 @@ fun MenuList(
     menus: List<MenuItem>,
     selectedIndex: Int,
     padding: Int,
+    isLogin: Boolean,
     onClick: (index: Int) -> Unit
 ) {
     var focusedIndex by remember { mutableIntStateOf(0) }
@@ -122,89 +160,131 @@ fun MenuList(
         firstMenuFocusRequester.requestFocus()
     }
 
-    Column(modifier = Modifier
-        .width(widthAnim)
-        .fillMaxHeight()
-        .verticalScroll(scrollState)
-        .padding(horizontal = 16.dp)
-        .padding(bottom = 8.dp)
+    Column(
+        modifier = Modifier
+            .width(widthAnim)
+            .fillMaxHeight()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 8.dp)
     ) {
-
-        Image(painter = painterResource(id = R.drawable.logo_dark),
-            contentDescription = "",
-            modifier = Modifier.height(if (focusedIndex > -1) 80.dp else 0.dp),
-            contentScale = ContentScale.FillWidth
-        )
-
-        Image(painter = painterResource(id = R.drawable.small_logo),
-            contentDescription = "",
+        Column(
             modifier = Modifier
-                .height(if (focusedIndex == -1) 80.dp else 0.dp)
-                .width(80.dp)
-        )
-        
-        menus.forEachIndexed { index, menu ->
-            Card(
-                onClick = { onClick(index) },
-                colors = CardDefaults.colors(
-                    containerColor = Color.Transparent,
-                    focusedContainerColor = Color.White
-                ),
-                border = CardDefaults.border(
-                    focusedBorder = Border.None
-                ),
-                modifier = Modifier
-                    .padding(vertical = padding.dp)
-                    .onFocusChanged {
-                        if (it.isFocused) focusedIndex = index
-                        else if (focusedIndex > -1) focusedIndex = -1
-                    }
-                    .focusRequester(if (menu.isPrimary) firstMenuFocusRequester else anotherMenuFocusRequester)
-            ) {
-                Row(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (menu.type == MenuIconType.ICON) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            imageVector = menu.getIcon(selectedIndex == index),
-                            contentDescription = "",
-                            tint = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
-                        )
-                    } else if (menu.type == MenuIconType.SVG) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(id = menu.getImage()),
-                            contentDescription = "",
-                            tint = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
-                        )
-                    } else {
-                        Image(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(id = menu.getImage(selectedIndex == index)),
-                            contentDescription = "",
-                            colorFilter = ColorFilter.tint(
-                                color = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
-                            ),
-                            alpha = 1f
-                        )
-                    }
+                .fillMaxHeight(fraction = if (isLogin) 0.85f else 1f)
+                .verticalScroll(scrollState)
+        ) {
 
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = menu.title,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray,
-                            fontWeight = if (selectedIndex == index) FontWeight.W700 else FontWeight.W600,
-                            fontSize = TextUnit(
-                                14f,
-                                TextUnitType.Sp
+            Image(
+                painter = painterResource(id = R.drawable.logo_dark),
+                contentDescription = "",
+                modifier = Modifier.height(if (focusedIndex > -1) 80.dp else 0.dp),
+                contentScale = ContentScale.FillWidth
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.small_logo),
+                contentDescription = "",
+                modifier = Modifier
+                    .height(if (focusedIndex == -1) 80.dp else 0.dp)
+                    .width(80.dp)
+            )
+
+            menus.forEachIndexed { index, menu ->
+                Card(
+                    onClick = { onClick(index) },
+                    colors = CardDefaults.colors(
+                        containerColor = Color.Transparent,
+                        focusedContainerColor = Color.White
+                    ),
+                    border = CardDefaults.border(
+                        focusedBorder = Border.None
+                    ),
+                    modifier = Modifier
+                        .padding(vertical = padding.dp)
+                        .onFocusChanged {
+                            if (it.isFocused) focusedIndex = index
+                            else if (focusedIndex > -1) focusedIndex = -1
+                        }
+                        .focusRequester(if (menu.isPrimary) firstMenuFocusRequester else anotherMenuFocusRequester)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (menu.type == MenuIconType.ICON) {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                imageVector = menu.getIcon(selectedIndex == index),
+                                contentDescription = "",
+                                tint = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
                             )
-                        ),
-                        maxLines = 1
-                    )
+                        } else if (menu.type == MenuIconType.SVG) {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(id = menu.getImage()),
+                                contentDescription = "",
+                                tint = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
+                            )
+                        } else {
+                            Image(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(id = menu.getImage(selectedIndex == index)),
+                                contentDescription = "",
+                                colorFilter = ColorFilter.tint(
+                                    color = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray
+                                ),
+                                alpha = 1f
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = menu.title,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = if (focusedIndex == index) Color.Black else if (selectedIndex == index) Color.White else Color.Gray,
+                                fontWeight = if (selectedIndex == index) FontWeight.W700 else FontWeight.W600,
+                                fontSize = TextUnit(
+                                    14f,
+                                    TextUnitType.Sp
+                                )
+                            ),
+                            maxLines = 1
+                        )
+                    }
+                }
+            }
+        }
+
+        if (isLogin) {
+            Spacer(modifier = Modifier.height(16.dp))
+            if (focusedIndex > -1){
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .background(
+                            color = Color.White.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(all = 8.dp)
+                ) {
+                    Icon(imageVector = Icons.Outlined.PersonPin, contentDescription = "")
+                    Text(text = " ${TempDB.vipInfo?.getVipDays()} ", textAlign = TextAlign.Right)
+                    Text(text = "روز", textAlign = TextAlign.Right)
+                }
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color.White.copy(alpha = 0.3f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(all = 8.dp)
+                ) {
+                    Icon(imageVector = Icons.Outlined.PersonPin, contentDescription = "")
+                    Text(text = " ${TempDB.vipInfo?.getVipDays()} ", textAlign = TextAlign.Right)
                 }
             }
         }

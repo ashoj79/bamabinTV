@@ -54,6 +54,12 @@ class AppRepository @Inject constructor(
             if (!connectionChecker.isConnect())
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
 
+            val token = appDatastore.getToken()
+            if (token.isNotEmpty()){
+                TempDB.saveToken(token)
+                TempDB.isLogin.value = true
+            }
+
             var baseUrl = appDatastore.getBaseUrl()
             if (baseUrl.isEmpty() && isFirstTime) {
                 val r = getBaseUrl()

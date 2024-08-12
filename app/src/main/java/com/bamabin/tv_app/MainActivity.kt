@@ -10,13 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
+import com.bamabin.tv_app.ui.screens.login.LoginScreen
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
 import com.bamabin.tv_app.ui.screens.splash.SplashScreen
 import com.bamabin.tv_app.ui.theme.BamabinTVTheme
@@ -48,6 +47,10 @@ class MainActivity : ComponentActivity() {
 
                             composable(route = Routes.START.name) {
                                 HomeScreen(navHostController)
+                            }
+
+                            composable(route = Routes.LOGIN.name) {
+                                LoginScreen(navHostController)
                             }
 
 //                            composable(

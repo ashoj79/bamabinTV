@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -133,6 +134,19 @@ fun ErrorDialog(
                     )
                 }
             }
+        }
+    )
+}
+
+@Composable
+fun LoadingDialog() {
+    AlertDialog(
+        containerColor = Color(0xFF2B2B2B),
+        onDismissRequest = {},
+        confirmButton = {},
+        modifier = Modifier.size(300.dp),
+        text = {
+            LoadingWidget()
         }
     )
 }

@@ -4,9 +4,12 @@ import com.bamabin.tv_app.data.remote.model.app.AboutUs
 import com.bamabin.tv_app.data.remote.model.user.VipInfo
 import com.bamabin.tv_app.data.remote.model.videos.Genre
 import com.bamabin.tv_app.data.remote.model.videos.Post
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class TempDB {
     companion object {
+        val isLogin = MutableStateFlow(false)
+
         var genres: List<Genre> = emptyList()
             private set
         var aboutUs: AboutUs? = null
@@ -15,12 +18,14 @@ class TempDB {
             private set
         var promotions: List<Post> = emptyList()
             private set
+        var token: String = ""
+            private set
 
         fun saveGenres(data:List<Genre>) {
             genres = data
         }
 
-        fun saveVipInfo(data:VipInfo) {
+        fun saveVipInfo(data:VipInfo?) {
             vipInfo = data
         }
 
@@ -30,6 +35,10 @@ class TempDB {
 
         fun savePromotions(data:List<Post>) {
             promotions = data
+        }
+
+        fun saveToken(data: String) {
+            token = data
         }
     }
 }

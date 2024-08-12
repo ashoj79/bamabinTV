@@ -43,7 +43,7 @@ fun LoadingWidget(
     ) {
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(50.dp)
                 .background(
                     color = Color.White,
                     shape = CircleShape

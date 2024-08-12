@@ -39,7 +39,7 @@ Java_com_bamabin_tv_1app_utils_AESHelper_getKey(JNIEnv* env, jobject obj /* this
     char buf[64];
     sprintf(buf, "%d", hashInt);
 //    hashStr.append(buf);
-    hashStr.append("-1757145615BAMABiNR1sTuVwXyZoiWE");
+    hashStr.append("752729709BAMABiNR1sTuVwXyZoiWE49");
 
     return env->NewStringUTF(hashStr.c_str());
 }
@@ -127,7 +127,7 @@ Java_com_bamabin_tv_1app_repo_AppRepository_getId(JNIEnv* env, jobject obj /* th
 //        return env->NewStringUTF(hashStr.c_str());
 //    }
 
-    std::string data = "1--IfXV33qVKgpWp1be5DUztWJiJgH-ZB";
+    std::string data = "1-5FNpeCPHeRvFbqFiKaWgh5KgRaM40R-";
 
     return env->NewStringUTF(data.c_str());
 }
