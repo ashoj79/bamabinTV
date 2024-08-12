@@ -86,6 +86,25 @@ fun MovieCard(post: Post, modifier: Modifier = Modifier) {
                     .clip(RoundedCornerShape(8.dp))
             )
 
+            Text(
+                text = post.releaseYear,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = Color.White,
+                    fontSize = TextUnit(9f, TextUnitType.Sp)
+                ),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(top = 8.dp, start = 8.dp)
+                    .padding(horizontal = 2.dp)
+                    .background(
+                        Color.Black.copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -182,7 +201,7 @@ fun MovieCard(post: Post, modifier: Modifier = Modifier) {
 
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = post.getClearTitle(),
+            text = post.title,
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = TextUnit(
                     12f,

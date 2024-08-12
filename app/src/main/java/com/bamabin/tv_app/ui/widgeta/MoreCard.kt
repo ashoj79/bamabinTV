@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
@@ -34,6 +35,7 @@ import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.bamabin.tv_app.R
 
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -67,14 +69,15 @@ fun MoreCard(modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Icons.Filled.MoreHoriz,
                 contentDescription = "",
+                tint = Color.White,
                 modifier = Modifier
                     .size(80.dp)
+                    .align(Alignment.Center)
                     .background(
-                        color = Color(0xFF9B9B9B),
+                        color = Color(0xFF2A94FF),
                         shape = CircleShape
                     )
                     .padding(all = 16.dp),
-                tint = Color.White,
             )
         }
 

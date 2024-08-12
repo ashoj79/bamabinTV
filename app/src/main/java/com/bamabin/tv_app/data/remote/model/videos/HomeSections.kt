@@ -38,7 +38,7 @@ data class HomeSection(
                         )
                     )
                 }
-                val title = postData.getString("title")
+                val title = postData.getString("en_title")
                 var imdbRate = postData.getString("imdb_rate_movie")
                 if (imdbRate.isEmpty()) imdbRate = " - "
 
@@ -49,7 +49,8 @@ data class HomeSection(
                         postData.getString("thumbnail"),
                         imdbRate,
                         hasAudio,
-                        genres
+                        genres,
+                        postData.getString("release_movie")
                     )
                 )
             }
