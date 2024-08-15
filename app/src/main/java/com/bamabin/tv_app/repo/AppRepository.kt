@@ -31,6 +31,18 @@ class AppRepository @Inject constructor(
         }
     }
 
+    suspend fun getTextColor() = appDatastore.getSubTextColor()
+    suspend fun setTextColor(data: Int) = appDatastore.setSubTextColor(data)
+
+    suspend fun getBgColor() = appDatastore.getSubBgColor()
+    suspend fun setBgColor(data: Int) = appDatastore.setSubBgColor(data)
+
+    suspend fun getFont() = appDatastore.getSubFont()
+    suspend fun setFont(data: Int) = appDatastore.setSubFont(data)
+
+    suspend fun getSize() = appDatastore.getSubSize()
+    suspend fun setSize(data: Int) = appDatastore.setSubSize(data)
+
     suspend fun getBaseUrl(retryCount: Int = 1): DataResult<Any> {
         return try {
             if (retryCount == 6)

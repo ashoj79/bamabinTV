@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.bamabin.tv_app"
-        minSdk = 21
+        minSdk = 24
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.paging.compose)
     implementation(libs.qrcode)
     implementation(libs.socketio)
+    implementation(libs.persian.date)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)

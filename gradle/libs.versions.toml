@@ -22,6 +22,7 @@ nav_version = "2.7.7"
 paging = "3.3.1"
 qr_code = "3.4.1"
 socket_io = "2.0.0"
+persian_date = "1.7.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,6 +57,7 @@ paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.r
 paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging"}
 qrcode = { group = "com.google.zxing", name = "core", version.ref = "qr_code"}
 socketio = { group = "io.socket", name = "socket.io-client", version.ref = "socket_io"}
+persian-date = { group = "com.github.samanzamani", name = "PersianDate", version.ref = "persian_date"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

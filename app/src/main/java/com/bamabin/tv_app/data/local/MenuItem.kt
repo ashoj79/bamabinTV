@@ -53,5 +53,5 @@ enum class MenuIconType {
 }
 
 enum class MenuPage {
-    HOME, GENRES, SEARCH, MOVIES, SERIES, ANIMATIONS, ANIME
+    HOME, GENRES, SEARCH, MOVIES, SERIES, ANIMATIONS, ANIME, PANEL
 }

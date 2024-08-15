@@ -58,7 +58,7 @@ class HomeViewModel @Inject constructor(
         MenuItem("خرید اشتراک", Icons.Outlined.ShoppingCart, Icons.Filled.ShoppingCart),
         MenuItem("دسته‌بندی‌ها", Icons.Outlined.Window, Icons.Filled.Window, page = MenuPage.GENRES),
         MenuItem("جستجو", Icons.Outlined.Search, Icons.Filled.Search, page = MenuPage.SEARCH),
-        MenuItem("پنل کاربری", Icons.Outlined.PersonOutline, Icons.Filled.Person),
+        MenuItem("پنل کاربری", Icons.Outlined.PersonOutline, Icons.Filled.Person, page = MenuPage.PANEL),
         MenuItem("فیلم ها", Icons.Outlined.Movie, Icons.Filled.Movie, page = MenuPage.MOVIES),
         MenuItem("سریال‌ها", Icons.Outlined.VideoCameraBack, Icons.Filled.VideoCameraBack, page = MenuPage.SERIES),
         MenuItem("انیمیشن‌ها", R.drawable.animation, page = MenuPage.ANIMATIONS),
@@ -67,7 +67,9 @@ class HomeViewModel @Inject constructor(
         MenuItem("خروج", Icons.Outlined.Logout, Icons.Filled.Logout)
     )
 
-    private val _selectedMenuIndex = MutableStateFlow(1)
+    private var loginStatus = TempDB.isLogin.value
+
+    private val _selectedMenuIndex = MutableStateFlow(if (loginStatus) 0 else 1)
     val selectedMenuIndex:StateFlow<Int> = _selectedMenuIndex
 
     fun updateSelectedMenu(index: Int) {
@@ -79,4 +81,12 @@ class HomeViewModel @Inject constructor(
     }
 
     fun getMenuItems(isLogin: Boolean) = if (isLogin) loggedInMenuItems else notLoggedInMenuItems
+
+    fun handleLoginChange(){
+        if (loginStatus == TempDB.isLogin.value)return
+
+        loginStatus = TempDB.isLogin.value
+        if (loginStatus) updateSelectedMenu(0)
+        else updateSelectedMenu(1)
+    }
 }

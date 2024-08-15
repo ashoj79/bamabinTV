@@ -4,5 +4,6 @@ enum class Routes {
     SPLASH,
     START,
     ARCHIVE,
-    LOGIN
+    LOGIN,
+    REQUEST_FORM
 }

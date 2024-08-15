@@ -62,6 +62,7 @@ import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.ui.screens.archive.PostTypeArchiveScreen
 import com.bamabin.tv_app.ui.screens.genres_archive.GenresArchive
 import com.bamabin.tv_app.ui.screens.main.MainScreen
+import com.bamabin.tv_app.ui.screens.panel.PanelScreen
 import com.bamabin.tv_app.ui.screens.search.SearchScreen
 import com.bamabin.tv_app.utils.Routes
 
@@ -82,8 +83,7 @@ fun HomeScreen(
     val selectedMenuIndex by homeViewModel.selectedMenuIndex.collectAsState()
 
     LaunchedEffect(isLogin) {
-        if (isLogin) homeViewModel.updateSelectedMenu(0)
-        else homeViewModel.updateSelectedMenu(1)
+        homeViewModel.handleLoginChange()
     }
 
     Row {
@@ -122,6 +122,8 @@ fun HomeScreen(
                     postType = PostType.ANIME,
                     navHostController = navHostController
                 )
+
+                MenuPage.PANEL -> PanelScreen(navHostController)
 
                 else -> MainScreen()
             }
@@ -269,7 +271,7 @@ fun MenuList(
                         .padding(all = 8.dp)
                 ) {
                     Icon(imageVector = Icons.Outlined.PersonPin, contentDescription = "")
-                    Text(text = " ${TempDB.vipInfo?.getVipDays()} ", textAlign = TextAlign.Right)
+                    Text(text = " ${TempDB.vipInfo?.days} ", textAlign = TextAlign.Right)
                     Text(text = "روز", textAlign = TextAlign.Right)
                 }
             } else {
@@ -284,7 +286,7 @@ fun MenuList(
                         .padding(all = 8.dp)
                 ) {
                     Icon(imageVector = Icons.Outlined.PersonPin, contentDescription = "")
-                    Text(text = " ${TempDB.vipInfo?.getVipDays()} ", textAlign = TextAlign.Right)
+                    Text(text = " ${TempDB.vipInfo?.days} ", textAlign = TextAlign.Right)
                 }
             }
         }

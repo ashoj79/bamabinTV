@@ -12,4 +12,7 @@ val Pink40 = Color(0xFF7D5260)
 
 val DarkBG = Color(0xFF1C1B1F)
 
-val Blue = Color.Blue
+val Blue = Color(0xFF29B6F6)
+
+val Failed = Color(0xFFF44336)
+val Success = Color(0xFF4CAF50)
