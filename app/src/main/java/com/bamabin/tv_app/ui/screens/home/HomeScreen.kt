@@ -141,6 +141,8 @@ fun MenuList(
     isLogin: Boolean,
     onClick: (index: Int) -> Unit
 ) {
+    val days by TempDB.vipDays.collectAsState()
+
     var focusedIndex by remember { mutableIntStateOf(0) }
     val scrollState = rememberScrollState()
     val firstMenuFocusRequester = FocusRequester()
@@ -286,7 +288,7 @@ fun MenuList(
                         .padding(all = 8.dp)
                 ) {
                     Icon(imageVector = Icons.Outlined.PersonPin, contentDescription = "")
-                    Text(text = " ${TempDB.vipInfo?.days} ", textAlign = TextAlign.Right)
+                    Text(text = " $days ", textAlign = TextAlign.Right)
                 }
             }
         }

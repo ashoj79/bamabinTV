@@ -3,6 +3,7 @@ package com.bamabin.tv_app.repo
 import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.data.local.datastore.AppDatastore
 import com.bamabin.tv_app.data.remote.api_service.UserApiService
+import com.bamabin.tv_app.data.remote.model.user.InviteInfo
 import com.bamabin.tv_app.data.remote.model.user.Request
 import com.bamabin.tv_app.data.remote.model.user.Transaction
 import com.bamabin.tv_app.data.remote.model.user.UserData
@@ -101,6 +102,41 @@ class UserRepository @Inject constructor(
             if (!response.status)
                 return DataResult.DataError(response.message?: "اطلاعات غلط است")
 
+            DataResult.DataSuccess("")
+        } catch (e: HttpException){
+            DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
+        } catch (_: Exception) {
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
+    suspend fun getInviteInfo(): DataResult<InviteInfo> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = userApiService.getInviteInfo()
+            if (!response.status)
+                return DataResult.DataError(response.message?: "اطلاعات غلط است")
+
+            DataResult.DataSuccess(response.getMainResult()!!)
+        } catch (e: HttpException){
+            DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
+        } catch (_: Exception) {
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
+    suspend fun saveInviteCode(code: String): DataResult<Any> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = userApiService.saveInviteCode(code)
+            if (!response.status)
+                return DataResult.DataError(response.message?: "اطلاعات غلط است")
+
+            TempDB.saveVipInfo(response.getMainResult())
             DataResult.DataSuccess("")
         } catch (e: HttpException){
             DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")

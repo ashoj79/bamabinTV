@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class TempDB {
     companion object {
         val isLogin = MutableStateFlow(false)
+        val vipDays = MutableStateFlow(0)
 
         var genres: List<Genre> = emptyList()
             private set
@@ -20,6 +21,8 @@ class TempDB {
             private set
         var token: String = ""
             private set
+        var supportLink: String = ""
+            private set
 
         fun saveGenres(data:List<Genre>) {
             genres = data
@@ -27,6 +30,7 @@ class TempDB {
 
         fun saveVipInfo(data:VipInfo?) {
             vipInfo = data
+            vipDays.value = data?.days ?: 0
         }
 
         fun saveAboutUs(data:AboutUs) {
@@ -39,6 +43,10 @@ class TempDB {
 
         fun saveToken(data: String) {
             token = data
+        }
+
+        fun saveSupportLink(data: String) {
+            supportLink = data
         }
     }
 }

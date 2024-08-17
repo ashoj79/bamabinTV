@@ -134,8 +134,8 @@ private fun Filters(
         ) {
             Button(
                 colors = ButtonDefaults.colors(
-                    containerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121),
-                    focusedContainerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121)
+                    containerColor = if (selectedOrder == 1) MaterialTheme.colorScheme.primary else Color(0xFF212121),
+                    focusedContainerColor = if (selectedOrder == 1) MaterialTheme.colorScheme.primary else Color(0xFF212121)
                 ),
                 border = ButtonDefaults.border(
                     border = Border.None,
@@ -160,8 +160,8 @@ private fun Filters(
             }
             Button(
                 colors = ButtonDefaults.colors(
-                    containerColor = if (selectedOrder == 2) Color(0xFFF6AD12) else Color(0xFF212121),
-                    focusedContainerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121)
+                    containerColor = if (selectedOrder == 2) MaterialTheme.colorScheme.primary else Color(0xFF212121),
+                    focusedContainerColor = if (selectedOrder == 2) MaterialTheme.colorScheme.primary else Color(0xFF212121)
                 ),
                 border = ButtonDefaults.border(
                     border = Border.None,
@@ -186,8 +186,8 @@ private fun Filters(
             }
             Button(
                 colors = ButtonDefaults.colors(
-                    containerColor = if (selectedOrder == 3) Color(0xFFF6AD12) else Color(0xFF212121),
-                    focusedContainerColor = if (selectedOrder == 1) Color(0xFFF6AD12) else Color(0xFF212121)
+                    containerColor = if (selectedOrder == 3) MaterialTheme.colorScheme.primary else Color(0xFF212121),
+                    focusedContainerColor = if (selectedOrder == 3) MaterialTheme.colorScheme.primary else Color(0xFF212121)
                 ),
                 border = ButtonDefaults.border(
                     border = Border.None,

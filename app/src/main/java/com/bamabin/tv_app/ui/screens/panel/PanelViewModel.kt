@@ -1,6 +1,7 @@
 package com.bamabin.tv_app.ui.screens.panel
 
 import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.HeadsetMic
@@ -12,16 +13,23 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bamabin.tv_app.R
+import com.bamabin.tv_app.data.local.TempDB
+import com.bamabin.tv_app.data.remote.model.user.InviteInfo
 import com.bamabin.tv_app.data.remote.model.user.Request
 import com.bamabin.tv_app.data.remote.model.user.Transaction
 import com.bamabin.tv_app.data.remote.model.user.UserData
 import com.bamabin.tv_app.repo.AppRepository
 import com.bamabin.tv_app.repo.UserRepository
 import com.bamabin.tv_app.utils.DataResult
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.common.BitMatrix
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +42,7 @@ import javax.inject.Inject
 class PanelViewModel @Inject constructor(
     private val repository: UserRepository,
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
     @ApplicationContext private val context: Context
 ): ViewModel() {
     var userData: UserData
@@ -54,11 +63,20 @@ class PanelViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _showLogoutAlert = MutableStateFlow(false)
+    val showLogoutAlert: StateFlow<Boolean> = _showLogoutAlert
+
     private val _transactions = mutableStateListOf<Transaction>()
     val transactions: SnapshotStateList<Transaction> = _transactions
 
     private val _requests = mutableStateListOf<Request>()
     val requests: SnapshotStateList<Request> = _requests
+
+    private val _inviteInfo = MutableStateFlow<InviteInfo?>(null)
+    val inviteInfo:StateFlow<InviteInfo?> = _inviteInfo
+
+    private val _errorMessage = MutableStateFlow("")
+    val errorMessage: StateFlow<String> = _errorMessage
 
     private val _currentBgColor = MutableStateFlow(0)
     val currentBgColor: StateFlow<Int> = _currentBgColor
@@ -89,10 +107,14 @@ class PanelViewModel @Inject constructor(
     }
 
     fun selectMenu(index:Int){
-        _selectedMenu.value = index
+        if (index < menuItems.size - 1)
+            _selectedMenu.value = index
+
         when(index){
             1 -> getRequests()
             2 -> getTransactions()
+            3 -> getInviteInfo()
+            menuItems.size - 1 -> _showLogoutAlert.value = true
         }
     }
 
@@ -156,12 +178,52 @@ class PanelViewModel @Inject constructor(
         }
     }
 
+    fun saveInviteCode(code: String)= viewModelScope.launch {
+        _isLoading.value = true
+        val result = userRepository.saveInviteCode(code)
+        _isLoading.value = false
+        if (result is DataResult.DataSuccess){
+            _inviteInfo.value = _inviteInfo.value!!.copy(
+                isInvited = true
+            )
+        } else {
+            _errorMessage.value = result.message
+        }
+    }
+
+    fun hideErrorDialog() {_errorMessage.value = ""}
+
+    fun logout() = viewModelScope.launch { repository.logout() }
+    fun hideLogoutAlert() {
+        _showLogoutAlert.value = false
+    }
+
+    fun generateQRCode(width: Int = 400, height: Int = 400): ImageBitmap {
+        val bitMatrix: BitMatrix = MultiFormatWriter().encode(TempDB.supportLink, BarcodeFormat.QR_CODE, width, height)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                bitmap.setPixel(x, y, if (bitMatrix[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
+            }
+        }
+        return bitmap.asImageBitmap()
+    }
+
     private fun getTransactions()= viewModelScope.launch {
         _isLoading.value = true
         val result = repository.getTransactions()
         _isLoading.value = false
         if (result is DataResult.DataSuccess){
             _transactions.addAll(result.data!!)
+        }
+    }
+
+    private fun getInviteInfo()= viewModelScope.launch {
+        _isLoading.value = true
+        val result = userRepository.getInviteInfo()
+        _isLoading.value = false
+        if (result is DataResult.DataSuccess){
+            _inviteInfo.value = result.data
         }
     }
 }

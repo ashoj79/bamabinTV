@@ -38,9 +38,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val userRepository: UserRepository
-): ViewModel() {
+class HomeViewModel @Inject constructor(): ViewModel() {
 
     private val notLoggedInMenuItems = listOf(
         MenuItem("ورود", Icons.Outlined.Login, Icons.Filled.Login, route = Routes.LOGIN.name),
@@ -63,8 +61,7 @@ class HomeViewModel @Inject constructor(
         MenuItem("سریال‌ها", Icons.Outlined.VideoCameraBack, Icons.Filled.VideoCameraBack, page = MenuPage.SERIES),
         MenuItem("انیمیشن‌ها", R.drawable.animation, page = MenuPage.ANIMATIONS),
         MenuItem("انیمه‌ها", R.drawable.anime, page = MenuPage.ANIME),
-        MenuItem("لیست‌ها", Icons.Outlined.Menu, Icons.Filled.Menu),
-        MenuItem("خروج", Icons.Outlined.Logout, Icons.Filled.Logout)
+        MenuItem("لیست‌ها", Icons.Outlined.Menu, Icons.Filled.Menu)
     )
 
     private var loginStatus = TempDB.isLogin.value
@@ -73,11 +70,7 @@ class HomeViewModel @Inject constructor(
     val selectedMenuIndex:StateFlow<Int> = _selectedMenuIndex
 
     fun updateSelectedMenu(index: Int) {
-        if (TempDB.isLogin.value && index == loggedInMenuItems.lastIndex){
-            viewModelScope.launch { userRepository.logout() }
-        } else {
-            _selectedMenuIndex.value = index
-        }
+        _selectedMenuIndex.value = index
     }
 
     fun getMenuItems(isLogin: Boolean) = if (isLogin) loggedInMenuItems else notLoggedInMenuItems

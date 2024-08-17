@@ -1,6 +1,7 @@
 package com.bamabin.tv_app.data.remote.api_service
 
 import com.bamabin.tv_app.data.remote.model.ApiResponse
+import com.bamabin.tv_app.data.remote.model.user.InviteInfo
 import com.bamabin.tv_app.data.remote.model.user.Request
 import com.bamabin.tv_app.data.remote.model.user.Transaction
 import com.bamabin.tv_app.data.remote.model.user.UserData
@@ -35,4 +36,13 @@ interface UserApiService {
         @Field("release") release: String,
         @Field("type") type: String
     ): ApiResponse<Any>
+
+    @GET("api/invite")
+    suspend fun getInviteInfo(): ApiResponse<InviteInfo>
+
+    @POST("api/invite")
+    @FormUrlEncoded
+    suspend fun saveInviteCode(
+        @Field("invite_code") code: String
+    ): ApiResponse<VipInfo>
 }

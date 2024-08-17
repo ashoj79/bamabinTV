@@ -10,15 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
 import com.bamabin.tv_app.ui.screens.login.LoginScreen
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
 import com.bamabin.tv_app.ui.screens.request_form.RequestForm
 import com.bamabin.tv_app.ui.screens.splash.SplashScreen
+import com.bamabin.tv_app.ui.screens.taxonomy_posts.TaxonomyPosts
 import com.bamabin.tv_app.ui.theme.BamabinTVTheme
 import com.bamabin.tv_app.utils.Routes
 import dagger.hilt.android.AndroidEntryPoint
@@ -58,20 +61,26 @@ class MainActivity : ComponentActivity() {
                                 RequestForm(navHostController)
                             }
 
-//                            composable(
-//                                route = "${Routes.ARCHIVE}/{post_type}",
-//                                arguments = listOf(
-//                                    navArgument("post_type") {
-//                                        type = NavType.StringType
-//                                        defaultValue = ""
-//                                    }
-//                                )
-//                            ) { backStackEntry ->
-//                                val typeName = backStackEntry.arguments?.getString("post_type") ?: ""
-//                                val postType = try { PostType.valueOf(typeName) } catch (_:Exception) { null }
-//
-//                                ArchiveScreen(postType, navHostController)
-//                            }
+                            composable(
+                                route = "${Routes.TAXONOMY_POSTS}/{taxonomy}/{id}/{title}",
+                                arguments = listOf(
+                                    navArgument("taxonomy") {
+                                        type = NavType.StringType
+                                    },
+                                    navArgument("id") {
+                                        type = NavType.IntType
+                                    },
+                                    navArgument("title") {
+                                        type = NavType.StringType
+                                    }
+                                )
+                            ) {
+                                val taxonomy = it.arguments?.getString("taxonomy")!!
+                                val id = it.arguments?.getInt("id")!!
+                                val title = it.arguments?.getString("title")!!
+
+                                TaxonomyPosts(navHostController, taxonomy, id, title)
+                            }
                         }
                     }
                 }

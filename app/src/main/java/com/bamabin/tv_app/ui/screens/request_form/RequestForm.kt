@@ -64,11 +64,8 @@ fun RequestForm(
 ) {
     var title by remember { mutableStateOf("") }
     val titleFocusRequester = remember { FocusRequester() }
-    val titleInteractionSource = remember { MutableInteractionSource() }
-
     var year by remember { mutableStateOf("") }
     val yearFocusRequester = remember { FocusRequester() }
-    val yearInteractionSource = remember { MutableInteractionSource() }
 
     var selectedType by remember { mutableIntStateOf(0) }
 
@@ -119,36 +116,30 @@ fun RequestForm(
                 focusedBorder = Border.None
             ),
             onClick = { titleFocusRequester.requestFocus() }) {
-            BasicTextField(
+            OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White, fontSize = TextUnit(20f, TextUnitType.Sp)),
+                label = { Text(text = "عنوان فیلم / سریال / انیمیشن / انیمه", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)) },
                 singleLine = true,
                 maxLines = 1,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White,
+                    fontSize = TextUnit(20f, TextUnitType.Sp),
+                    textAlign = TextAlign.Center
+                ),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFC2C2C2),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = Color(0xFFC2C2C2),
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 160.dp)
                     .padding(top = 8.dp)
                     .align(Alignment.CenterHorizontally)
-                    .clickable(false) {}
                     .focusRequester(titleFocusRequester)
-            ) {
-                OutlinedTextFieldDefaults.DecorationBox(
-                    value = title,
-                    innerTextField = it,
-                    enabled = true,
-                    singleLine = true,
-                    visualTransformation = VisualTransformation.None,
-                    interactionSource = titleInteractionSource,
-                    label = { Text(text = "عنوان فیلم / سریال / انیمیشن / انیمه", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFC2C2C2),
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = Color(0xFFC2C2C2),
-                    ),
-                    contentPadding = OutlinedTextFieldDefaults.contentPadding(),
-                )
-            }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -163,37 +154,31 @@ fun RequestForm(
                 focusedBorder = Border.None
             ),
             onClick = { yearFocusRequester.requestFocus() }) {
-            BasicTextField(
+            OutlinedTextField(
                 value = year,
                 onValueChange = { year = if (year.length < 4) it else year },
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White, fontSize = TextUnit(20f, TextUnitType.Sp)),
+                label = { Text(text = "سال تولید", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)) },
                 singleLine = true,
                 maxLines = 1,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White,
+                    fontSize = TextUnit(20f, TextUnitType.Sp),
+                    textAlign = TextAlign.Center
+                ),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = Color(0xFFC2C2C2),
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = Color(0xFFC2C2C2),
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 160.dp)
                     .padding(top = 8.dp)
                     .align(Alignment.CenterHorizontally)
-                    .clickable(false) {}
                     .focusRequester(yearFocusRequester)
-            ) {
-                OutlinedTextFieldDefaults.DecorationBox(
-                    value = year,
-                    innerTextField = it,
-                    enabled = true,
-                    singleLine = true,
-                    visualTransformation = VisualTransformation.None,
-                    interactionSource = yearInteractionSource,
-                    label = { Text(text = "سال تولید", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color(0xFFC2C2C2),
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = Color(0xFFC2C2C2),
-                    ),
-                    contentPadding = OutlinedTextFieldDefaults.contentPadding(),
-                )
-            }
+            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))

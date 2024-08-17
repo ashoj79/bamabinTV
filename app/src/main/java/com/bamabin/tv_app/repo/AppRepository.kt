@@ -90,6 +90,7 @@ class AppRepository @Inject constructor(
             TempDB.saveVipInfo(response.results.vipInfo)
             TempDB.saveAboutUs(response.results.aboutUs)
             TempDB.savePromotions(response.results.promotions)
+            TempDB.saveSupportLink(response.results.supportLink)
 
             DataResult.DataSuccess(response.results.version.copy(
                 needUpdate = response.results.version.version > BuildConfig.VERSION_CODE

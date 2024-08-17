@@ -12,5 +12,7 @@ data class StartupData(
     val aboutUs: AboutUs,
     @SerializedName("vip_info")
     val vipInfo: VipInfo,
-    val promotions: List<Post>
+    val promotions: List<Post>,
+    @SerializedName("support_link")
+    val supportLink: String
 )
