@@ -1,6 +1,5 @@
 package com.bamabin.tv_app.ui.screens.genres_archive
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -30,6 +28,7 @@ import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.data.remote.model.videos.Genre
+import com.bamabin.tv_app.utils.Routes
 
 @Composable
 fun GenresArchive(
@@ -52,7 +51,12 @@ fun GenresArchive(
             contentPadding = PaddingValues(16.dp)
         ) {
             items(TempDB.genres.size) {
-                GenreItem(TempDB.genres[it])
+                GenreItem(TempDB.genres[it]){
+                    val id = TempDB.genres[it].id
+                    val title = TempDB.genres[it].name
+
+                    navHostController.navigate("${Routes.TAXONOMY_POSTS.name}/genres/$id/$title")
+                }
             }
         }
     }
@@ -60,13 +64,13 @@ fun GenresArchive(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun GenreItem(genre: Genre) {
+private fun GenreItem(genre: Genre, onClick: () -> Unit) {
     Card(
         colors = CardDefaults.colors(
             containerColor = Color.Transparent
         ),
         modifier = Modifier.padding(8.dp),
-        onClick = { /*TODO*/ }) {
+        onClick = onClick) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(8.dp))

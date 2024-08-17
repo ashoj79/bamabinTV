@@ -63,4 +63,21 @@ class VideosRepository @Inject constructor(
             DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
         }
     }
+
+    suspend fun getPostsWithTaxonomy(taxonomy: String, id: Int, orderBy: String, type: PostType?, page: Int): DataResult<List<Post>> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = videosApiService.getPostWithTaxonomy(taxonomy, id, orderBy, type?.typeName ?: "", page)
+            if (!response.status)
+                return DataResult.DataError(response.message ?: "")
+
+            DataResult.DataSuccess(response.getMainResult()!!)
+        } catch (e: HttpException){
+            DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
+        } catch (e: Exception){
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
 }
