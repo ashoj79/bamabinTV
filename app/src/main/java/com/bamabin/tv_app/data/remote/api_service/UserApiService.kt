@@ -45,4 +45,7 @@ interface UserApiService {
     suspend fun saveInviteCode(
         @Field("invite_code") code: String
     ): ApiResponse<VipInfo>
+
+    @GET("api/vip/tv_link")
+    suspend fun getPayLink(): ApiResponse<String>
 }

@@ -53,7 +53,7 @@ class HomeViewModel @Inject constructor(): ViewModel() {
 
     private val loggedInMenuItems = listOf(
         MenuItem("خانه", Icons.Outlined.Home, Icons.Filled.Home, true, page = MenuPage.HOME),
-        MenuItem("خرید اشتراک", Icons.Outlined.ShoppingCart, Icons.Filled.ShoppingCart),
+        MenuItem("خرید اشتراک", Icons.Outlined.ShoppingCart, Icons.Filled.ShoppingCart, route = Routes.SUBSCRIBE.name),
         MenuItem("دسته‌بندی‌ها", Icons.Outlined.Window, Icons.Filled.Window, page = MenuPage.GENRES),
         MenuItem("جستجو", Icons.Outlined.Search, Icons.Filled.Search, page = MenuPage.SEARCH),
         MenuItem("پنل کاربری", Icons.Outlined.PersonOutline, Icons.Filled.Person, page = MenuPage.PANEL),

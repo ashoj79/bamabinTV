@@ -21,6 +21,7 @@ import com.bamabin.tv_app.ui.screens.login.LoginScreen
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
 import com.bamabin.tv_app.ui.screens.request_form.RequestForm
 import com.bamabin.tv_app.ui.screens.splash.SplashScreen
+import com.bamabin.tv_app.ui.screens.subscribe.SubscribeScreen
 import com.bamabin.tv_app.ui.screens.taxonomy_posts.TaxonomyPosts
 import com.bamabin.tv_app.ui.theme.BamabinTVTheme
 import com.bamabin.tv_app.utils.Routes
@@ -80,6 +81,10 @@ class MainActivity : ComponentActivity() {
                                 val title = it.arguments?.getString("title")!!
 
                                 TaxonomyPosts(navHostController, taxonomy, id, title)
+                            }
+
+                            composable(route = Routes.SUBSCRIBE.name){
+                                SubscribeScreen(navHostController)
                             }
                         }
                     }

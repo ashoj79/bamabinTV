@@ -145,6 +145,36 @@ class UserRepository @Inject constructor(
         }
     }
 
+    suspend fun updateVipInfo(): DataResult<Any> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = getUserInfo()
+            if (!response)
+                return DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+
+            DataResult.DataSuccess("")
+        } catch (_: Exception) {
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
+    suspend fun getPayLink(): DataResult<String> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = userApiService.getPayLink()
+            if (!response.status)
+                return DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+
+            DataResult.DataSuccess(response.getMainResult() ?: "")
+        } catch (_: Exception) {
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
     suspend fun logout() {
         TempDB.saveVipInfo(null)
         appDatastore.setToken("")

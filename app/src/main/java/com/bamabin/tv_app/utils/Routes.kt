@@ -6,4 +6,5 @@ enum class Routes {
     LOGIN,
     REQUEST_FORM,
     TAXONOMY_POSTS,
+    SUBSCRIBE,
 }
