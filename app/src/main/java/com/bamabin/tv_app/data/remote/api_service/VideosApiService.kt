@@ -23,7 +23,7 @@ interface VideosApiService {
     @GET("api/search")
     suspend fun search(
         @Query("s") s: String
-    ): ApiResponse<SearchResult>
+    ): ApiResponse<List<Post>>
 
     @GET("api/archive/taxonomy/{taxonomy}/{taxonomy_id}")
     suspend fun getPostWithTaxonomy(

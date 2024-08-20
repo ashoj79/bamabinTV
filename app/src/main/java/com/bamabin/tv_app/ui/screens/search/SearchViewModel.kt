@@ -37,12 +37,7 @@ class SearchViewModel @Inject constructor(
                 _searchResult.value = DataResult.DataError(result.message)
                 return@launch
             }
-            val posts = mutableListOf<Post>()
-            posts.addAll(result.data!!.series)
-            posts.addAll(result.data.movies)
-            posts.addAll(result.data.animations)
-            posts.addAll(result.data.anime)
-            _searchResult.value = DataResult.DataSuccess(posts)
+            _searchResult.value = result
         }
     }
 }

@@ -28,29 +28,23 @@ data class HomeSection(
             val posts = mutableListOf<Post>()
             for (i in 0 until data.getJSONArray("posts").length()) {
                 val postData = data.getJSONArray("posts").getJSONObject(i)
-                val hasAudio = postData.getString("dlbox_audio").replace("\"", "").isNotEmpty()
-                val genres = mutableListOf<Genre>()
-                for (j in 0 until postData.getJSONArray("genres").length()) {
-                    genres.add(
-                        Gson().fromJson(
-                            postData.getJSONArray("genres").getJSONObject(j).toString(),
-                            Genre::class.java
-                        )
-                    )
-                }
-                val title = postData.getString("en_title")
-                var imdbRate = postData.getString("imdb_rate_movie")
-                if (imdbRate.isEmpty()) imdbRate = " - "
+                val genresId = mutableListOf<Int>()
+                val years = mutableListOf<Int>()
+                for (j in 0 until postData.getJSONArray("genres_id").length())
+                    genresId.add(postData.getJSONArray("genres_id").getInt(j))
+
+                for (j in 0 until postData.getJSONArray("years").length())
+                    years.add(postData.getJSONArray("years").getInt(j))
 
                 posts.add(
                     Post(
                         postData.getInt("id"),
-                        title,
+                        postData.getString("title"),
                         postData.getString("thumbnail"),
-                        imdbRate,
-                        hasAudio,
-                        genres,
-                        postData.getString("release_movie")
+                        postData.getString("imdb_rate"),
+                        postData.getBoolean("has_dubbed"),
+                        genresId,
+                        years
                     )
                 )
             }

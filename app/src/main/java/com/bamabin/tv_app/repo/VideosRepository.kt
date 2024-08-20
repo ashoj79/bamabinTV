@@ -47,7 +47,7 @@ class VideosRepository @Inject constructor(
         }
     }
 
-    suspend fun search(s: String): DataResult<SearchResult> {
+    suspend fun search(s: String): DataResult<List<Post>> {
         return try {
             if (!connectionChecker.isConnect())
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
