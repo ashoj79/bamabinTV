@@ -70,6 +70,7 @@ import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.ui.widgeta.MovieCard
 import com.bamabin.tv_app.utils.DataResult
+import com.bamabin.tv_app.utils.Routes
 import java.util.Locale
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalMaterial3Api::class)
@@ -184,7 +185,10 @@ fun SearchScreen(
                     contentPadding = PaddingValues(top = 40.dp, end = 16.dp, start = 16.dp)
                 ) {
                     items(it.data!!.size) {index ->
-                        MovieCard(it.data[index], Modifier.padding(bottom = 20.dp))
+                        MovieCard(it.data[index], Modifier.padding(bottom = 20.dp)) {
+                            val id = it.data[index].id
+                            navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
+                        }
                     }
                 }
             }

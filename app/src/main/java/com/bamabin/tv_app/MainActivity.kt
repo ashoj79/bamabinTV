@@ -19,6 +19,8 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
 import com.bamabin.tv_app.ui.screens.login.LoginScreen
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
+import com.bamabin.tv_app.ui.screens.player.PlayerScreen
+import com.bamabin.tv_app.ui.screens.post_details.PostDetailsScreen
 import com.bamabin.tv_app.ui.screens.request_form.RequestForm
 import com.bamabin.tv_app.ui.screens.splash.SplashScreen
 import com.bamabin.tv_app.ui.screens.subscribe.SubscribeScreen
@@ -85,6 +87,36 @@ class MainActivity : ComponentActivity() {
 
                             composable(route = Routes.SUBSCRIBE.name){
                                 SubscribeScreen(navHostController)
+                            }
+
+                            composable(
+                                route = "${Routes.POST_DETAILS.name}/{id}",
+                                arguments = listOf(
+                                    navArgument("id"){
+                                        type = NavType.IntType
+                                    }
+                                )
+                            ){
+                                PostDetailsScreen(navHostController)
+                            }
+
+                            composable(
+                                route = "${Routes.PLAYER.name}/{item}/{season}/{episode}",
+                                arguments = listOf(
+                                    navArgument("item") {
+                                        type = NavType.IntType
+                                    },
+                                    navArgument("season") {
+                                        type = NavType.IntType
+                                        defaultValue = -1
+                                    },
+                                    navArgument("episode") {
+                                        type = NavType.IntType
+                                        defaultValue = -1
+                                    },
+                                )
+                            ) {
+                                PlayerScreen(navHostController)
                             }
                         }
                     }

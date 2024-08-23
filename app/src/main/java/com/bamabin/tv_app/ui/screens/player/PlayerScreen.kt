@@ -9,12 +9,10 @@ import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -48,7 +46,6 @@ import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SlowMotionVideo
-import androidx.compose.material.icons.outlined.TextFields
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +67,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
@@ -80,12 +78,17 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import androidx.tv.foundation.lazy.list.TvLazyColumn
 import androidx.tv.foundation.lazy.list.TvLazyRow
 import androidx.tv.material3.Border
 import androidx.tv.material3.Button
@@ -96,16 +99,16 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
 import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
-import com.bamabin.tv_app.ui.widgeta.LoadingWidget
-import com.google.android.exoplayer2.text.Cue
+import com.bamabin.tv_app.R
+import com.bamabin.tv_app.data.remote.model.videos.EpisodeInfo
+import com.bamabin.tv_app.ui.widgeta.EpisodeBox
 import com.google.android.exoplayer2.ui.StyledPlayerView
-import com.google.android.exoplayer2.ui.SubtitleView
 import kotlinx.coroutines.delay
-import okhttp3.internal.http2.Settings
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
+    navHostController: NavHostController,
     context: Context = LocalContext.current,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
@@ -118,6 +121,8 @@ fun PlayerScreen(
     val ready by viewModel.ready.collectAsState()
     val showController by viewModel.showController.collectAsState()
     val showSetting by viewModel.showSetting.collectAsState()
+    val showSeasons by viewModel.showSeasons.collectAsState()
+    val selectedSeason by viewModel.selectedSeasonIndex.collectAsState()
     val isPlaying by viewModel.isPlaying.collectAsState()
     val currentPosition by viewModel.currentPosition.collectAsState()
     val currentTime by viewModel.currentTime.collectAsState()
@@ -182,6 +187,7 @@ fun PlayerScreen(
                 }
             },
             update = {view ->
+                view.player = viewModel.player
                 view.resizeMode = aspectRatio
                 subtitleStyle?.let {
                     view.subtitleView?.setStyle(it)
@@ -204,8 +210,8 @@ fun PlayerScreen(
                 ),
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(CircleShape),
-                enabled = !showSetting,
+                    .clip(CircleShape)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.forward() }) {
                 Icon(
                     imageVector = Icons.Filled.FastForward,
@@ -231,8 +237,8 @@ fun PlayerScreen(
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(48.dp)
-                        .focusRequester(defaultFocusRequester),
-                    enabled = !showSetting,
+                        .focusRequester(defaultFocusRequester)
+                        .focusProperties { canFocus = !showSetting && !showSeasons },
                     onClick = { viewModel.playPause() }) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
@@ -252,8 +258,8 @@ fun PlayerScreen(
                 ),
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(CircleShape),
-                enabled = !showSetting,
+                    .clip(CircleShape)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.reward() }) {
                 Icon(
                     imageVector = Icons.Filled.FastRewind,
@@ -281,7 +287,7 @@ fun PlayerScreen(
                 .padding(all = 16.dp)
         ) {
             Text(
-                text = "عنوان فیلم",
+                text = viewModel.title,
                 style = MaterialTheme.typography.titleLarge.copy(color = Color.White)
             )
         }
@@ -374,6 +380,7 @@ fun PlayerScreen(
 
                             return@onKeyEvent false
                         }
+                        .focusProperties { canFocus = !showSetting && !showSeasons }
                 )
             }
 
@@ -382,8 +389,8 @@ fun PlayerScreen(
                     containerColor = Color.Transparent,
                     focusedContainerColor = Color.White.copy(0.3f),
                 ),
-                enabled = !showSetting,
-                modifier = Modifier.align(Alignment.BottomEnd),
+                modifier = Modifier.align(Alignment.BottomEnd)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.changeAspectRatio() }) {
                 Icon(imageVector = Icons.Outlined.AspectRatio, contentDescription = "", tint = Color.White)
             }
@@ -393,8 +400,8 @@ fun PlayerScreen(
                     containerColor = Color.Transparent,
                     focusedContainerColor = Color.White.copy(0.3f),
                 ),
-                enabled = !showSetting,
-                modifier = Modifier.align(Alignment.BottomStart),
+                modifier = Modifier.align(Alignment.BottomStart)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.showSetting() }) {
                 Icon(imageVector = Icons.Outlined.Settings, contentDescription = "", tint = Color.White)
             }
@@ -407,8 +414,8 @@ fun PlayerScreen(
                     ),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .offset(x = 48.dp),
-                    enabled = !showSetting,
+                        .offset(x = 48.dp)
+                        .focusProperties { canFocus = !showSetting && !showSeasons },
                     onClick = { viewModel.showAudioAlert() }) {
                     Icon(imageVector = Icons.Filled.Mic, contentDescription = "", tint = Color.White)
                 }
@@ -424,10 +431,27 @@ fun PlayerScreen(
                         .align(Alignment.BottomStart)
                         .offset(
                             x = if (audios.size > 1) 96.dp else 48.dp
-                        ),
-                    enabled = !showSetting,
+                        )
+                        .focusProperties { canFocus = !showSetting && !showSeasons },
                     onClick = { viewModel.showSubtitleAlert() }) {
                     Icon(imageVector = Icons.Filled.ClosedCaption, contentDescription = "", tint = Color.White)
+                }
+            }
+
+            if (viewModel.isSeries) {
+                IconButton(
+                    colors = ButtonDefaults.colors(
+                        containerColor = Color.Transparent,
+                        focusedContainerColor = Color.White.copy(0.3f),
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .offset(
+                            x = ((minOf(1, audios.size) + minOf(1, subtitles.size)) * 48).dp
+                        )
+                        .focusProperties { canFocus = !showSetting && !showSeasons },
+                    onClick = { viewModel.showSeasons() }) {
+                    Icon(painter = painterResource(id = R.drawable.select_window), contentDescription = "", tint = Color.White)
                 }
             }
         }
@@ -458,6 +482,18 @@ fun PlayerScreen(
         CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
             AudioAlert()
         }
+    }
+    
+    if (showSeasons) {
+        Seasons(
+            seasons = viewModel.seasonsName,
+            episodes = viewModel.episodes,
+            thumbnail = viewModel.thumbnail,
+            selectedSeason = selectedSeason,
+            screenWidth = screenWidth,
+            onSeasonClick = { viewModel.changeSelectedSeason(it) },
+            onEpisodeClick = { viewModel.changeEpisode(it) }
+        )
     }
 }
 
@@ -610,6 +646,7 @@ private fun SettingPanel(
     Column(
         modifier = Modifier
             .fillMaxHeight()
+            .zIndex(1f)
             .width(350.dp)
             .background(Color.Black.copy(alpha = 0.8f))
             .padding(all = 16.dp)
@@ -766,4 +803,91 @@ private fun SettingsRow(
         color = Color.White.copy(alpha = 0.2f),
         modifier = Modifier.padding(vertical = 16.dp)
     )
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun Seasons(
+    seasons: List<String>,
+    episodes: List<EpisodeInfo>,
+    thumbnail: String,
+    selectedSeason: Int,
+    screenWidth: Dp,
+    onSeasonClick: (index: Int) -> Unit,
+    onEpisodeClick: (index: Int) -> Unit,
+) {
+    TvLazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .zIndex(1f)
+            .background(Color.Black.copy(alpha = 0.6f)),
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = 16.dp
+        )
+    ) {
+        item {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 16.dp, start = 16.dp)
+            ) {
+                Text(
+                    text = "فصل‌ها:",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.White
+                    )
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                for (i in seasons.indices){
+                    Button(
+                        colors = ButtonDefaults.colors(
+                            containerColor = if (selectedSeason == i) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            focusedContainerColor = if (selectedSeason == i) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        ),
+                        border = ButtonDefaults.border(
+                            border = Border.None,
+                            focusedBorder = Border(
+                                border = BorderStroke(1.dp, Color.White),
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                        ),
+                        shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        onClick = { onSeasonClick(i) }) {
+                        Text(
+                            text = "فصل ${seasons[i]}",
+                            style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+                        )
+                    }
+                }
+            }
+        }
+
+        for (i in episodes.indices step 4){
+            val itemsCount = episodes.size - i
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp)
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    for (j in i until i + minOf(4, itemsCount)){
+                        EpisodeBox(
+                            seasonName = seasons[selectedSeason],
+                            thumbnail = thumbnail,
+                            width = (screenWidth - 48.dp)/ 4,
+                            episode = episodes[j]
+                        ) {
+                            onEpisodeClick(j)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

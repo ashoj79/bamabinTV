@@ -167,9 +167,10 @@ fun LoginScreen(
                     Text(
                         text = viewModel.link,
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.titleMedium.copy(
+                        style = MaterialTheme.typography.titleLarge.copy(
                             color = Color.White,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = TextUnit(24f, TextUnitType.Sp)
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )

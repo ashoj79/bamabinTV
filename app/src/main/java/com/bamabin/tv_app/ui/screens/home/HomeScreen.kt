@@ -125,7 +125,7 @@ fun HomeScreen(
 
                 MenuPage.PANEL -> PanelScreen(navHostController)
 
-                else -> MainScreen()
+                else -> MainScreen(navHostController)
             }
         }
     }

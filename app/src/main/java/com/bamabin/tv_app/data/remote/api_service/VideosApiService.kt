@@ -2,7 +2,7 @@ package com.bamabin.tv_app.data.remote.api_service
 
 import com.bamabin.tv_app.data.remote.model.ApiResponse
 import com.bamabin.tv_app.data.remote.model.videos.Post
-import com.bamabin.tv_app.data.remote.model.videos.SearchResult
+import com.bamabin.tv_app.data.remote.model.videos.PostDetails
 import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -33,4 +33,9 @@ interface VideosApiService {
         @Query("type") type: String,
         @Query("page") page: Int
     ): ApiResponse<List<Post>>
+
+    @GET("api/post/show/v2/{id}")
+    suspend fun getPostDetails(
+        @Path("id") id: Int
+    ): ApiResponse<PostDetails>
 }

@@ -16,3 +16,4 @@ val Blue = Color(0xFF29B6F6)
 
 val Failed = Color(0xFFF44336)
 val Success = Color(0xFF4CAF50)
+val AgeRateBox = Color(0xFFFB8C00)

@@ -37,6 +37,7 @@ import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.ui.widgeta.MovieCard
+import com.bamabin.tv_app.utils.Routes
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -97,7 +98,10 @@ fun TaxonomyPosts(
                 }
 
                 items(viewModel.posts.size) {
-                    MovieCard(viewModel.posts[it], Modifier.padding(bottom = 20.dp))
+                    MovieCard(viewModel.posts[it], Modifier.padding(bottom = 20.dp)) {
+                        val id = viewModel.posts[it].id
+                        navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
+                    }
 
                     if (it == viewModel.posts.lastIndex) viewModel.getPosts()
                 }

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.tv.foundation.lazy.list.TvLazyColumn
 import androidx.tv.foundation.lazy.list.TvLazyRow
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -27,9 +28,10 @@ import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.ui.widgeta.MoreCard
 import com.bamabin.tv_app.ui.widgeta.MovieCard
 import com.bamabin.tv_app.utils.DataResult
+import com.bamabin.tv_app.utils.Routes
 
 @Composable
-fun MainScreen(mainViewModel: MainViewModel = hiltViewModel()) {
+fun MainScreen(navHostController: NavHostController, mainViewModel: MainViewModel = hiltViewModel()) {
     val result by mainViewModel.homeSections.collectAsState()
 
     if (result is DataResult.DataSuccess) {
@@ -40,6 +42,7 @@ fun MainScreen(mainViewModel: MainViewModel = hiltViewModel()) {
                     modifier = Modifier.padding(
                         bottom = if (it == result.data!!.size - 1) 32.dp else 16.dp
                     ),
+                    navHostController = navHostController
                 )
             }
         }
@@ -61,6 +64,7 @@ fun MainScreen(mainViewModel: MainViewModel = hiltViewModel()) {
 fun Section(
     modifier: Modifier,
     homeSection: HomeSection,
+    navHostController: NavHostController
 ) {
     Row(
         horizontalArrangement = Arrangement.Start,
@@ -96,7 +100,10 @@ fun Section(
                     modifier = Modifier.padding(
                         start = if (it == 0) 16.dp else 0.dp,
                     )
-                )
+                ) {
+                    val id = homeSection.posts[it].id
+                    navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
+                }
             } else {
                 MoreCard()
             }

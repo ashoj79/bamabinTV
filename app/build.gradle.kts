@@ -97,6 +97,10 @@ dependencies {
     implementation(libs.qrcode)
     implementation(libs.socketio)
     implementation(libs.persian.date)
+    implementation(libs.room.db)
+    implementation(libs.room.db.ktx)
+    annotationProcessor(libs.room.db.processor)
+    kapt(libs.room.db.processor)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)

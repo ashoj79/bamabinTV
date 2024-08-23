@@ -4,6 +4,7 @@ import com.bamabin.tv_app.data.remote.model.app.AboutUs
 import com.bamabin.tv_app.data.remote.model.user.VipInfo
 import com.bamabin.tv_app.data.remote.model.videos.Genre
 import com.bamabin.tv_app.data.remote.model.videos.Post
+import com.bamabin.tv_app.data.remote.model.videos.PostDetails
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class TempDB {
@@ -22,6 +23,8 @@ class TempDB {
         var token: String = ""
             private set
         var supportLink: String = ""
+            private set
+        var selectedPost: PostDetails? = null
             private set
 
         fun saveGenres(data:List<Genre>) {
@@ -47,6 +50,10 @@ class TempDB {
 
         fun saveSupportLink(data: String) {
             supportLink = data
+        }
+
+        fun setSelectedPost(data: PostDetails?) {
+            selectedPost = data
         }
     }
 }

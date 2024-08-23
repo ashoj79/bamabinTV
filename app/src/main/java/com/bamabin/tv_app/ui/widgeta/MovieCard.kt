@@ -48,7 +48,7 @@ import com.bamabin.tv_app.data.remote.model.videos.Post
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun MovieCard(post: Post, modifier: Modifier = Modifier) {
+fun MovieCard(post: Post, modifier: Modifier = Modifier, onClick: () -> Unit) {
     var isFocused by remember { mutableStateOf(false) }
     val animatedBottomMargin by animateDpAsState(
         targetValue = if (isFocused) 24.dp else 8.dp,
@@ -56,7 +56,7 @@ fun MovieCard(post: Post, modifier: Modifier = Modifier) {
     )
 
     Card(
-        onClick = {},
+        onClick = onClick,
         colors = CardDefaults.colors(containerColor = Color.Transparent),
         border = CardDefaults.border(focusedBorder = Border.None),
         scale = CardDefaults.scale(focusedScale = 1.25f),

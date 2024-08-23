@@ -7,34 +7,45 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bamabin.tv_app.R
+import com.bamabin.tv_app.data.local.TempDB
+import com.bamabin.tv_app.data.local.database.model.WatchData
+import com.bamabin.tv_app.data.remote.model.videos.EpisodeInfo
+import com.bamabin.tv_app.repo.AppRepository
+import com.bamabin.tv_app.repo.VideosRepository
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.Format
 import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.TracksInfo
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionOverrides
 import com.google.android.exoplayer2.trackselection.TrackSelectionOverrides.TrackSelectionOverride
-import com.google.android.exoplayer2.trackselection.TrackSelectionParameters
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.CaptionStyleCompat
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val savedStateHandle: SavedStateHandle,
+    private val appRepository: AppRepository,
+    private val videosRepository: VideosRepository
 ): ViewModel() {
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -51,11 +62,14 @@ class PlayerViewModel @Inject constructor(
     private val _showSetting = MutableStateFlow(false)
     val showSetting: StateFlow<Boolean> = _showSetting
 
+    private val _showSeasons = MutableStateFlow(false)
+    val showSeasons: StateFlow<Boolean> = _showSeasons
+
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
     private val _ready = MutableStateFlow(false)
-    val ready:StateFlow<Boolean> = _ready
+    val ready: StateFlow<Boolean> = _ready
 
     private val _currentTime = MutableStateFlow("00:00:00")
     val currentTime: StateFlow<String> = _currentTime
@@ -93,6 +107,9 @@ class PlayerViewModel @Inject constructor(
     private val _currentSize = MutableStateFlow(1)
     val currentSize: StateFlow<Int> = _currentSize
 
+    private val _selectedSeasonIndex = MutableStateFlow(0)
+    val selectedSeasonIndex: StateFlow<Int> = _selectedSeasonIndex
+
     lateinit var player: ExoPlayer
     var duration = 1F
         private set
@@ -102,11 +119,32 @@ class PlayerViewModel @Inject constructor(
         private set
     var wholeTime = "00:00:00"
         private set
+    val title: String
+        get() {
+            return if (TempDB.selectedPost!!.isSeries) {
+                "${TempDB.selectedPost!!.title} - فصل ${TempDB.selectedPost!!.seasons!![seasonIndex].name} قسمت ${TempDB.selectedPost!!.seasons!![seasonIndex].episodes[episodeIndex].name}"
+            } else {
+                TempDB.selectedPost!!.title
+            }
+        }
+    val isSeries: Boolean
+        get() = TempDB.selectedPost!!.isSeries
+    val seasonsName: List<String>
+        get() = TempDB.selectedPost!!.seasons!!.map { it.name }
+    val episodes: List<EpisodeInfo>
+        get() = TempDB.selectedPost!!.seasons!![_selectedSeasonIndex.value].episodes
+    val thumbnail: String
+        get() = TempDB.selectedPost!!.bgThumbnail
+
     val playbackSpeeds = listOf("0.75x", "1.0x", "1.25x", "1.5x", "2.0x")
     val backgroundColors = listOf("مشکی", "تیره کم‌رنگ", "بی‌رنگ")
     val textColors = listOf("سفید", "زرد", "آبی")
     val fonts = listOf("ایران‌سنس", "وزیر متن", "دانا")
     val sizes = listOf("کوچک", "متوسط", "بزرگ")
+
+    private var seasonIndex: Int = savedStateHandle["season"] ?: -1
+    private var episodeIndex: Int = savedStateHandle["episode"] ?: -1
+    private var itemIndex: Int = savedStateHandle["item"] ?: -1
 
     private var timer: CountDownTimer? = null
 
@@ -121,8 +159,13 @@ class PlayerViewModel @Inject constructor(
         AspectRatioFrameLayout.RESIZE_MODE_FIT,
         AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
     )
+    private var timerJob: Job? = null
+    private var isEnd = false
+    private var watchData: WatchData? = null
 
     init {
+        viewModelScope.launch { watchData = videosRepository.getWatchData(TempDB.selectedPost!!.id) }
+        loadDefaultSubtitleConfigs()
         setupPlayer()
         setSubtitleView()
     }
@@ -156,7 +199,7 @@ class PlayerViewModel @Inject constructor(
         timer?.cancel()
         _showController.value = true
 
-        if (player.isPlaying)player.pause()
+        if (player.isPlaying) player.pause()
         _showSubtitleAlert.value = true
     }
 
@@ -164,11 +207,11 @@ class PlayerViewModel @Inject constructor(
         timer?.cancel()
         _showController.value = true
 
-        if (player.isPlaying)player.pause()
+        if (player.isPlaying) player.pause()
         _showAudioAlert.value = true
     }
 
-    fun setSubtitle(index: Int){
+    fun setSubtitle(index: Int) {
         if (index > subtitlesId.lastIndex) {
             player.trackSelectionParameters = player.trackSelectionParameters
                 .buildUpon()
@@ -201,7 +244,7 @@ class PlayerViewModel @Inject constructor(
         }
 
         val overrideBuilder = TrackSelectionOverrides.Builder()
-        for (ov in overrides){
+        for (ov in overrides) {
             overrideBuilder.setOverrideForType(ov)
         }
 
@@ -217,7 +260,9 @@ class PlayerViewModel @Inject constructor(
         player.play()
     }
 
-    fun setAudio(index: Int){
+    fun setAudio(index: Int) {
+        if (index > audiosId.lastIndex) return
+
         val indices = audiosId[index]
         val mappedTrackInfo = trackSelector.currentMappedTrackInfo!!
 
@@ -234,7 +279,7 @@ class PlayerViewModel @Inject constructor(
         overrides.add(o)
 
         val overrideBuilder = TrackSelectionOverrides.Builder()
-        for (ov in overrides){
+        for (ov in overrides) {
             overrideBuilder.addOverride(ov)
         }
 
@@ -293,7 +338,7 @@ class PlayerViewModel @Inject constructor(
 
     fun setTextSize(index: Int) {
         _currentSize.value = index
-        _subtitleSize.value = when(index) {
+        _subtitleSize.value = when (index) {
             2 -> 48f
             1 -> 34f
             else -> 24f
@@ -306,20 +351,60 @@ class PlayerViewModel @Inject constructor(
         player.playbackParameters = PlaybackParameters(speed)
     }
 
+    fun showSeasons() {
+        player.pause()
+        _selectedSeasonIndex.value = seasonIndex
+        _showSeasons.value = true
+    }
+
+    fun changeSelectedSeason(index: Int) {
+        _selectedSeasonIndex.value = index
+    }
+
+    fun changeEpisode(index: Int) {
+        val data =
+            TempDB.selectedPost!!.seasons!![seasonIndex].episodes[episodeIndex].items.getItemInfo(
+                itemIndex
+            )
+        val newItemIndex =
+            TempDB.selectedPost!!.seasons!![_selectedSeasonIndex.value].episodes[index].items.getSimilarIndex(
+                data
+            )
+        if (newItemIndex == -1) return
+
+        _showSeasons.value = false
+        seasonIndex = _selectedSeasonIndex.value
+        episodeIndex = index
+        itemIndex = newItemIndex
+
+        player.stop()
+        _showController.value = true
+        isDataExtracted = false
+        duration = 0f
+        wholeTime = "00:00:00"
+        _currentTime.value = "00:00:00"
+        audiosId.clear()
+        subtitlesId.clear()
+        _subtitles.clear()
+        _audios.clear()
+
+        setupPlayer()
+    }
+
     private fun setSubtitleView() {
-        val textColor = when(_currentTextColor.value) {
+        val textColor = when (_currentTextColor.value) {
             1 -> 0xFFFFEB3B
             2 -> 0xFF2196F3
             else -> 0xFFFFFFFF
         }.toInt()
 
-        val bgColor = when(_currentBgColor.value) {
+        val bgColor = when (_currentBgColor.value) {
             1 -> 0x88000000
             2 -> 0x00000000
             else -> 0xFF000000
         }.toInt()
 
-        val fontId: Int = when(_currentFont.value) {
+        val fontId: Int = when (_currentFont.value) {
             1 -> R.font.vazir
             2 -> R.font.dana
             else -> R.font.iransans
@@ -337,7 +422,7 @@ class PlayerViewModel @Inject constructor(
 
     private fun setupPlayer() {
         val mediaSource = DefaultMediaSourceFactory(context).createMediaSource(
-            MediaItem.fromUri("https://dl4.uplodingdl.shop/Movies/2024/The.Garfield.Movie.tt5779228/Dubbed/The.Garfield.Movie.2024.720p.WEB-DL.x264-YIFY.Dual.Audio.SoftSub.BMB.15A66F30.mkv")
+            MediaItem.fromUri(getPlayLink())
         )
 
         player = ExoPlayer.Builder(context)
@@ -346,7 +431,7 @@ class PlayerViewModel @Inject constructor(
             .apply {
                 setMediaSource(mediaSource)
 
-                addListener(object : Player.Listener{
+                addListener(object : Player.Listener {
                     override fun onIsPlayingChanged(isPlaying: Boolean) {
                         super.onIsPlayingChanged(isPlaying)
 
@@ -356,8 +441,14 @@ class PlayerViewModel @Inject constructor(
                     override fun onPlaybackStateChanged(playbackState: Int) {
                         super.onPlaybackStateChanged(playbackState)
                         _isLoading.value = playbackState == Player.STATE_BUFFERING
+                        isEnd = playbackState == Player.STATE_ENDED
 
                         if (!isDataExtracted && playbackState == Player.STATE_READY) extractVideoInfo()
+                    }
+
+                    override fun onPlayerError(error: PlaybackException) {
+                        super.onPlayerError(error)
+                        Log.i("___", error.message?:"")
                     }
                 })
 
@@ -368,9 +459,11 @@ class PlayerViewModel @Inject constructor(
 
     private fun extractVideoInfo() {
         isDataExtracted = true
-        _ready.value = true
+        if (!_ready.value) _ready.value = true
         duration = player.duration.toFloat()
         wholeTime = formatTime(duration)
+
+        setPreviousWatchData()
         updateDuration()
         startHideTimer()
 
@@ -389,6 +482,7 @@ class PlayerViewModel @Inject constructor(
                                 a.add(getTrackName(format))
                                 audiosId.add(listOf(i, j, k))
                             }
+
                             C.TRACK_TYPE_TEXT -> {
                                 s.add(getTrackName(format))
                                 subtitlesId.add(listOf(i, j, k))
@@ -404,7 +498,21 @@ class PlayerViewModel @Inject constructor(
     }
 
     private fun getTrackName(format: Format): String {
-        val specialNames = listOf("Gapfilm", "Alphamedia", "Soren", "Qualima", "Namava", "Filimo", "Fimnet", "Avaje", "Glory", "Moasese", "Filmnet", "IRIB", "Dubbed")
+        val specialNames = listOf(
+            "Gapfilm",
+            "Alphamedia",
+            "Soren",
+            "Qualima",
+            "Namava",
+            "Filimo",
+            "Fimnet",
+            "Avaje",
+            "Glory",
+            "Moasese",
+            "Filmnet",
+            "IRIB",
+            "Dubbed"
+        )
         val lbl = format.label
 
         lbl?.let {
@@ -414,7 +522,7 @@ class PlayerViewModel @Inject constructor(
             }
         }
 
-        val lngName = when((format.language ?: "").lowercase()) {
+        val lngName = when ((format.language ?: "").lowercase()) {
             "fa", "per" -> "فارسی"
             "und" -> "زبان اصلی"
             "en", "mul" -> "انگلیسی"
@@ -434,13 +542,15 @@ class PlayerViewModel @Inject constructor(
         return lbl?.let { "$it - $lngName" } ?: lngName
     }
 
-    private fun updateDuration() = viewModelScope.launch {
-        while (true){
-            if (player.isPlaying){
-                _currentTime.value = formatTime(player.currentPosition.toFloat())
-                _currentPosition.value = player.currentPosition.toFloat()
+    private fun updateDuration() {
+        timerJob = viewModelScope.launch {
+            while (true) {
+                if (player.isPlaying) {
+                    _currentTime.value = formatTime(player.currentPosition.toFloat())
+                    _currentPosition.value = player.currentPosition.toFloat()
+                }
+                delay(1000)
             }
-            delay(1000)
         }
     }
 
@@ -463,5 +573,68 @@ class PlayerViewModel @Inject constructor(
         val seconds = (totalSeconds % 60).toInt()
 
         return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+    }
+
+    private fun loadDefaultSubtitleConfigs() = viewModelScope.launch {
+        _currentTextColor.value = appRepository.getTextColor()
+        _currentBgColor.value = appRepository.getBgColor()
+        _currentSize.value = appRepository.getSize()
+        _currentFont.value = appRepository.getFont()
+    }
+
+    private fun getPlayLink(): String {
+        TempDB.selectedPost?.let {
+            return if (it.isSeries){
+                it.seasons!![seasonIndex].episodes[episodeIndex].items.getAllItemsLink()[itemIndex]
+            } else {
+                it.movieDownloadBox!!.getAllItemsLink()[itemIndex]
+            }
+        }
+
+        return ""
+    }
+
+    private fun setPreviousWatchData() = viewModelScope.launch {
+        delay(1000)
+        watchData?.let {
+            if (
+                duration > it.time.toFloat() &&
+                ((TempDB.selectedPost!!.isSeries && seasonIndex == it.season && episodeIndex == it.episode) ||
+                        (!TempDB.selectedPost!!.isSeries))
+            ) {
+                player.seekTo(it.time)
+            }
+
+            setSubtitle(it.subtitleTrack)
+            setAudio(it.audioTrack)
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (!isEnd) {
+            runBlocking {
+                val data =
+                    if (TempDB.selectedPost!!.isSeries)
+                        TempDB.selectedPost!!.seasons!![seasonIndex].episodes[episodeIndex].items.getItemInfo(itemIndex)
+                    else
+                        TempDB.selectedPost!!.movieDownloadBox!!.getItemInfo(itemIndex)
+
+                videosRepository.saveWatchData(
+                    WatchData(
+                        TempDB.selectedPost!!.id,
+                        data[0],
+                        data[1],
+                        data[2],
+                        data[3],
+                        _currentPosition.value.toLong(),
+                        seasonIndex,
+                        episodeIndex,
+                        currentAudio,
+                        currentSubtitle
+                    )
+                )
+            }
+        }
     }
 }
