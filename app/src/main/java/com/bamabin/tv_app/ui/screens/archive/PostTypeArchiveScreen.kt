@@ -85,6 +85,7 @@ fun PostTypeArchiveScreen(
             TvLazyVerticalGrid(
                 columns = TvGridCells.Fixed(6),
                 modifier = Modifier.padding(top = 24.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
                 item (
                     span = { TvGridItemSpan(6) }
