@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
+import com.bamabin.tv_app.ui.screens.archive.PostTypeArchiveScreen
 import com.bamabin.tv_app.ui.screens.login.LoginScreen
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
 import com.bamabin.tv_app.ui.screens.player.PlayerScreen
@@ -65,7 +66,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(
-                                route = "${Routes.TAXONOMY_POSTS}/{taxonomy}/{id}/{title}",
+                                route = "${Routes.TAXONOMY_POSTS}?taxonomy={taxonomy}&id={id}&title={title}&order={order}",
                                 arguments = listOf(
                                     navArgument("taxonomy") {
                                         type = NavType.StringType
@@ -75,14 +76,14 @@ class MainActivity : ComponentActivity() {
                                     },
                                     navArgument("title") {
                                         type = NavType.StringType
+                                    },
+                                    navArgument("order") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
                                     }
                                 )
                             ) {
-                                val taxonomy = it.arguments?.getString("taxonomy")!!
-                                val id = it.arguments?.getInt("id")!!
-                                val title = it.arguments?.getString("title")!!
-
-                                TaxonomyPosts(navHostController, taxonomy, id, title)
+                                TaxonomyPosts(navHostController)
                             }
 
                             composable(route = Routes.SUBSCRIBE.name){
@@ -117,6 +118,38 @@ class MainActivity : ComponentActivity() {
                                 )
                             ) {
                                 PlayerScreen(navHostController)
+                            }
+
+                            composable(
+                                route = "${Routes.POST_TYPE.name}?type={type}&broadcast_status={broadcast_status}&mini_serial={mini_serial}&order_by={order_by}&dlbox_type={dlbox_type}&title={title}",
+                                arguments = listOf(
+                                    navArgument("type") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                    navArgument("broadcast_status") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                    navArgument("mini_serial") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                    navArgument("order_by") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                    navArgument("dlbox_type") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                    navArgument("title") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                )
+                            ) {
+                                PostTypeArchiveScreen(navHostController = navHostController)
                             }
                         }
                     }

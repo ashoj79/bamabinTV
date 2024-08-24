@@ -40,11 +40,11 @@ import com.bamabin.tv_app.R
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun MoreCard(modifier: Modifier = Modifier) {
+fun MoreCard(modifier: Modifier = Modifier, onClick: () -> Unit) {
     var isFocused by remember { mutableStateOf(false) }
 
     Card(
-        onClick = {},
+        onClick = onClick,
         colors = CardDefaults.colors(containerColor = Color.Transparent),
         border = CardDefaults.border(focusedBorder = Border.None),
         scale = CardDefaults.scale(focusedScale = 1.25f),

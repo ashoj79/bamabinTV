@@ -16,7 +16,9 @@ interface VideosApiService {
     suspend fun getPosts(
         @Query("type") type: String,
         @Query("order_by") orderBy: String,
-        @Query("genre_id") genreId: Int,
+        @Query("broadcast_status") broadcastStatus: String,
+        @Query("dlbox_type") dlboxType: String,
+        @Query("mini_serial") miniSerial: String,
         @Query("page") page: Int
     ): ApiResponse<List<Post>>
 

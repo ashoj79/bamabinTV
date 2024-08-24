@@ -5,7 +5,13 @@ import org.json.JSONObject
 
 data class HomeSection(
     val name: String,
-    val slug: String,
+    val taxonomy: String?,
+    val taxonomyId: String?,
+    val miniSerial: Boolean,
+    val broadcastStatuses: List<String>,
+    val dlboxType: String,
+    val postTypes: List<String>,
+    val orderBy: String,
     val posts: List<Post>
 ) {
     companion object {
@@ -49,7 +55,37 @@ data class HomeSection(
                 )
             }
 
-            return HomeSection(data.getString("name"), data.getString("see_more_link"), posts)
+            val broadcastStatuses = mutableListOf<String>()
+            val postTypes = mutableListOf<String>()
+
+            if (data.has("broadcast_status")) {
+                for (i in 0 until data.getJSONArray("broadcast_status").length()){
+                    broadcastStatuses.add(data.getJSONArray("broadcast_status").getString(i))
+                }
+            }
+
+            if (data.has("post_type")) {
+                for (i in 0 until data.getJSONArray("post_type").length()){
+                    postTypes.add(data.getJSONArray("post_type").getString(i))
+                }
+            }
+
+            val taxonomy = if (data.has("taxonomy")) data.getString("taxonomy") else null
+            val taxonomyId = if (data.has("taxonomy_id")) data.getString("taxonomy_id") else null
+            val miniSerial = if (data.has("mini_serial") && taxonomy == null) data.getBoolean("mini_serial") else false
+            val dlboxType = if (data.has("dlbox_type")) data.getString("dlbox_type") else ""
+            val orderBy = data.getString("order_by")
+            return HomeSection(
+                data.getString("name"),
+                taxonomy,
+                taxonomyId,
+                miniSerial,
+                broadcastStatuses,
+                dlboxType,
+                postTypes,
+                orderBy,
+                posts
+            )
         }
     }
 }

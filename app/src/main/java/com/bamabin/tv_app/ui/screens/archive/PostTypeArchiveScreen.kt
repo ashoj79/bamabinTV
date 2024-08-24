@@ -2,12 +2,16 @@ package com.bamabin.tv_app.ui.screens.archive
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,6 +31,8 @@ import androidx.tv.material3.Border
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
+import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.bamabin.tv_app.data.local.PostType
@@ -34,16 +40,19 @@ import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.ui.widgeta.MovieCard
 import com.bamabin.tv_app.utils.Routes
 
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun PostTypeArchiveScreen(
-    postType: PostType,
+    postType: PostType? = null,
     navHostController: NavHostController,
-    postTypeArchiveViewModel: PostTypeArchiveViewModel = hiltViewModel()
+    viewModel: PostTypeArchiveViewModel = hiltViewModel()
 ) {
-    val isLoading by postTypeArchiveViewModel.isLoading.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(Unit) {
-        postTypeArchiveViewModel.setPostType(postType)
+        postType?.let {
+            viewModel.setPostType(it)
+        }
     }
 
     Column (
@@ -51,14 +60,32 @@ fun PostTypeArchiveScreen(
             .fillMaxSize()
             .padding(top = 16.dp)
     ) {
-        Text(
-            text = postType.title,
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = postType?.title ?: viewModel.title,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
 
-        if (postTypeArchiveViewModel.posts.isNotEmpty()){
+            if (viewModel.showBack()) {
+                IconButton(
+                    colors = ButtonDefaults.colors(
+                        containerColor = Color.Transparent
+                    ),
+                    onClick = { navHostController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "",
+                        tint = Color.White
+                    )
+                }
+            }
+        }
+
+        if (viewModel.posts.isNotEmpty()){
             TvLazyVerticalGrid(
                 columns = TvGridCells.Fixed(6),
                 modifier = Modifier.padding(top = 24.dp),
@@ -70,14 +97,14 @@ fun PostTypeArchiveScreen(
                     Filters()
                 }
 
-                items(postTypeArchiveViewModel.posts.size) {
-                    MovieCard(postTypeArchiveViewModel.posts[it], Modifier.padding(bottom = 20.dp)) {
-                        val id = postTypeArchiveViewModel.posts[it].id
+                items(viewModel.posts.size) {
+                    MovieCard(viewModel.posts[it], Modifier.padding(bottom = 20.dp)) {
+                        val id = viewModel.posts[it].id
                         navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
                     }
 
-                    if (it == postTypeArchiveViewModel.posts.lastIndex){
-                        postTypeArchiveViewModel.fetchData()
+                    if (it == viewModel.posts.lastIndex){
+                        viewModel.fetchData()
                     }
                 }
                 item(

@@ -43,15 +43,8 @@ import com.bamabin.tv_app.utils.Routes
 @Composable
 fun TaxonomyPosts(
     navHostController: NavHostController,
-    taxonomy: String,
-    id: Int,
-    title: String,
     viewModel: TaxonomyPostsViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) {
-        viewModel.setData(taxonomy, id)
-    }
-
     val isLoading by viewModel.isLoading.collectAsState()
 
     Column(
@@ -65,7 +58,7 @@ fun TaxonomyPosts(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = title,
+                text = viewModel.title,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.TopCenter),
                 style = MaterialTheme.typography.titleLarge.copy(

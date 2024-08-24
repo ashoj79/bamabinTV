@@ -55,7 +55,7 @@ fun GenresArchive(
                     val id = TempDB.genres[it].id
                     val title = TempDB.genres[it].name
 
-                    navHostController.navigate("${Routes.TAXONOMY_POSTS.name}/genres/$id/$title")
+                    navHostController.navigate("${Routes.TAXONOMY_POSTS.name}?taxonomy=genres&id=$id&title=$title")
                 }
             }
         }

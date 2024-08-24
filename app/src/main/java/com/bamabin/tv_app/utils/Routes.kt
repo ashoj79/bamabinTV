@@ -8,5 +8,6 @@ enum class Routes {
     TAXONOMY_POSTS,
     SUBSCRIBE,
     POST_DETAILS,
-    PLAYER
+    PLAYER,
+    POST_TYPE
 }

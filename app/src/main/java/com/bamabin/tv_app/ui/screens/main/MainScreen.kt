@@ -43,7 +43,9 @@ fun MainScreen(navHostController: NavHostController, mainViewModel: MainViewMode
                         bottom = if (it == result.data!!.size - 1) 32.dp else 16.dp
                     ),
                     navHostController = navHostController
-                )
+                ) {
+                    navHostController.navigate(mainViewModel.getMoreRoute(it))
+                }
             }
         }
     }
@@ -64,7 +66,8 @@ fun MainScreen(navHostController: NavHostController, mainViewModel: MainViewMode
 fun Section(
     modifier: Modifier,
     homeSection: HomeSection,
-    navHostController: NavHostController
+    navHostController: NavHostController,
+    onMoreClick: () -> Unit
 ) {
     Row(
         horizontalArrangement = Arrangement.Start,
@@ -105,7 +108,7 @@ fun Section(
                     navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
                 }
             } else {
-                MoreCard()
+                MoreCard(onClick = onMoreClick)
             }
         }
     }
