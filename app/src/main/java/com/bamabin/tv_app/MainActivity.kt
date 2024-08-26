@@ -18,6 +18,8 @@ import androidx.navigation.navArgument
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Surface
 import com.bamabin.tv_app.ui.screens.archive.PostTypeArchiveScreen
+import com.bamabin.tv_app.ui.screens.comment_form.CommentFormScreen
+import com.bamabin.tv_app.ui.screens.comments.CommentsScreen
 import com.bamabin.tv_app.ui.screens.login.LoginScreen
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
 import com.bamabin.tv_app.ui.screens.player.PlayerScreen
@@ -154,6 +156,31 @@ class MainActivity : ComponentActivity() {
                                 )
                             ) {
                                 PostTypeArchiveScreen(navHostController = navHostController)
+                            }
+
+                            composable(
+                                route = "${Routes.COMMENTS.name}/{id}/{title}",
+                                arguments = listOf(
+                                    navArgument("id"){
+                                        type = NavType.IntType
+                                    },
+                                    navArgument("title"){
+                                        type = NavType.StringType
+                                    }
+                                )
+                            ) {
+                                CommentsScreen(navHostController)
+                            }
+
+                            composable(
+                                route = "${Routes.COMMENT_FORM.name}/{id}",
+                                arguments = listOf(
+                                    navArgument("id"){
+                                        type = NavType.IntType
+                                    }
+                                )
+                            ){
+                                CommentFormScreen(navHostController)
                             }
                         }
                     }

@@ -9,5 +9,7 @@ enum class Routes {
     SUBSCRIBE,
     POST_DETAILS,
     PLAYER,
-    POST_TYPE
+    POST_TYPE,
+    COMMENTS,
+    COMMENT_FORM,
 }

@@ -80,6 +80,7 @@ import com.bamabin.tv_app.ui.widgeta.EpisodeBox
 import com.bamabin.tv_app.ui.widgeta.ErrorDialog
 import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.utils.DataResult
+import com.bamabin.tv_app.utils.Routes
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -480,7 +481,7 @@ fun PostDetailsScreen(
                                     shape = RoundedCornerShape(8.dp)
                                 )
                             ),
-                            onClick = { /*TODO*/ }) {
+                            onClick = { navHostController.navigate("${Routes.COMMENTS.name}/${it.id}/${it.title}") }) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
