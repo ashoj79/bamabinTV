@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.AspectRatio
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.FontDownload
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Palette
@@ -101,6 +102,7 @@ import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import com.bamabin.tv_app.R
 import com.bamabin.tv_app.data.remote.model.videos.EpisodeInfo
+import com.bamabin.tv_app.ui.theme.Failed
 import com.bamabin.tv_app.ui.widgeta.EpisodeBox
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import kotlinx.coroutines.delay
@@ -156,8 +158,8 @@ fun PlayerScreen(
         }
     }
 
-    LaunchedEffect(ready, showSetting) {
-        if (ready && !showSetting){
+    LaunchedEffect(ready, showSetting, showSeasons) {
+        if (ready && !showSetting && !showSeasons){
             delay(100)
             defaultFocusRequester.requestFocus()
         }
@@ -329,7 +331,8 @@ fun PlayerScreen(
                         inactiveTrackColor = Color.White.copy(alpha = 0.1f),
                     ),
                     track = { state ->
-                        val activeWidth = (screenWidth - 32.dp) * (state.value / state.valueRange.endInclusive)
+                        val a = (state.value / state.valueRange.endInclusive)
+                        val activeWidth = (screenWidth - 32.dp) * a - 12.dp * a
 
                         Box(
                             modifier = Modifier
@@ -353,7 +356,7 @@ fun PlayerScreen(
                     },
                     thumb = {
                         Box(modifier = Modifier
-                            .size(if (isSliderFocused) 16.dp else 0.dp)
+                            .size(if (isSliderFocused) 18.dp else 0.dp)
                             .background(
                                 color = if (isSliderFocused) Color.White else Color.Transparent,
                                 shape = CircleShape
@@ -389,7 +392,8 @@ fun PlayerScreen(
                     containerColor = Color.Transparent,
                     focusedContainerColor = Color.White.copy(0.3f),
                 ),
-                modifier = Modifier.align(Alignment.BottomEnd)
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
                     .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.changeAspectRatio() }) {
                 Icon(imageVector = Icons.Outlined.AspectRatio, contentDescription = "", tint = Color.White)
@@ -400,7 +404,8 @@ fun PlayerScreen(
                     containerColor = Color.Transparent,
                     focusedContainerColor = Color.White.copy(0.3f),
                 ),
-                modifier = Modifier.align(Alignment.BottomStart)
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
                     .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.showSetting() }) {
                 Icon(imageVector = Icons.Outlined.Settings, contentDescription = "", tint = Color.White)
@@ -492,7 +497,8 @@ fun PlayerScreen(
             selectedSeason = selectedSeason,
             screenWidth = screenWidth,
             onSeasonClick = { viewModel.changeSelectedSeason(it) },
-            onEpisodeClick = { viewModel.changeEpisode(it) }
+            onEpisodeClick = { viewModel.changeEpisode(it) },
+            onCloseClick = { viewModel.hideSeasons() }
         )
     }
 }
@@ -815,7 +821,12 @@ private fun Seasons(
     screenWidth: Dp,
     onSeasonClick: (index: Int) -> Unit,
     onEpisodeClick: (index: Int) -> Unit,
+    onCloseClick: () -> Unit
 ) {
+    val defaultFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        defaultFocusRequester.requestFocus()
+    }
     TvLazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -842,6 +853,9 @@ private fun Seasons(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 for (i in seasons.indices){
+                    var modifier = Modifier.padding(horizontal = 4.dp)
+                    if (i == 0) modifier = modifier.focusRequester(defaultFocusRequester)
+
                     Button(
                         colors = ButtonDefaults.colors(
                             containerColor = if (selectedSeason == i) MaterialTheme.colorScheme.primary else Color.Transparent,
@@ -855,13 +869,35 @@ private fun Seasons(
                             )
                         ),
                         shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
-                        modifier = Modifier.padding(horizontal = 4.dp),
+                        modifier = modifier,
                         onClick = { onSeasonClick(i) }) {
                         Text(
                             text = "فصل ${seasons[i]}",
                             style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                IconButton(
+                    colors = ButtonDefaults.colors(
+                        containerColor = Color.Transparent,
+                        focusedContainerColor = Color.Transparent
+                    ),
+                    border = ButtonDefaults.border(
+                        border = Border.None,
+                        focusedBorder = Border(
+                            border = BorderStroke(1.dp, Color.White)
+                        )
+                    ),
+                    onClick = onCloseClick
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Cancel,
+                        contentDescription = "",
+                        tint = Failed
+                    )
                 }
             }
         }

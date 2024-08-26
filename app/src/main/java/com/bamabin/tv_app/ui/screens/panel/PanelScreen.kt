@@ -461,7 +461,11 @@ private fun Requests(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    onClick = { /*TODO*/ }) {
+                    onClick = {
+                        if (requests[it].isSubmitted()) {
+                            navHostController.navigate("${Routes.POST_DETAILS.name}/${requests[it].postId}")
+                        }
+                    }) {
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
