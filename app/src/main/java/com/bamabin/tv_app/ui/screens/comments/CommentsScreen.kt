@@ -48,6 +48,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import coil.compose.AsyncImage
+import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.data.remote.model.comment.Comment
 import com.bamabin.tv_app.ui.widgeta.ErrorDialog
 import com.bamabin.tv_app.ui.widgeta.LoadingWidget
@@ -61,6 +62,7 @@ fun CommentsScreen(
     viewModel: CommentsViewModel = hiltViewModel()
 ) {
     val result by viewModel.result.collectAsState()
+    val isLogin by TempDB.isLogin.collectAsState()
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -94,30 +96,32 @@ fun CommentsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
-            colors = ButtonDefaults.colors(
-                containerColor = Color.White,
-                focusedContainerColor = MaterialTheme.colorScheme.primary,
-                focusedContentColor = Color.White,
-                contentColor = MaterialTheme.colorScheme.primary,
-            ),
-            border = ButtonDefaults.border(
-                focusedBorder = Border(
-                    border = BorderStroke(
-                        width = 2.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+        if (isLogin) {
+            Button(
+                colors = ButtonDefaults.colors(
+                    containerColor = Color.White,
+                    focusedContainerColor = MaterialTheme.colorScheme.primary,
+                    focusedContentColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.primary,
                 ),
-                border = Border.None
-            ),
-            shape = ButtonDefaults.shape(shape = RoundedCornerShape(8.dp)),
-            modifier = Modifier.align(Alignment.End),
-            onClick = { navHostController.navigate("${Routes.COMMENT_FORM.name}/${viewModel.id}") }) {
-            Text(
-                text = "ثبت نظر",
-                style = MaterialTheme.typography.bodyMedium
-            )
+                border = ButtonDefaults.border(
+                    focusedBorder = Border(
+                        border = BorderStroke(
+                            width = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ),
+                    border = Border.None
+                ),
+                shape = ButtonDefaults.shape(shape = RoundedCornerShape(8.dp)),
+                modifier = Modifier.align(Alignment.End),
+                onClick = { navHostController.navigate("${Routes.COMMENT_FORM.name}/${viewModel.id}") }) {
+                Text(
+                    text = "ثبت نظر",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
 
         if (result is DataResult.DataSuccess){
