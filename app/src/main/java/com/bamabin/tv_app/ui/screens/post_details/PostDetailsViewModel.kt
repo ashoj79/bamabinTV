@@ -38,6 +38,9 @@ class PostDetailsViewModel @Inject constructor(
     private val _selectedSeason = MutableStateFlow(0)
     val selectedSeason: StateFlow<Int> = _selectedSeason
 
+    private val _likeStatus = MutableStateFlow(0)
+    val likeStatus: StateFlow<Int> = _likeStatus
+
     private val _bottomSheetItems = mutableStateListOf<String>()
     val bottomSheetItems: SnapshotStateList<String> = _bottomSheetItems
 
@@ -125,6 +128,31 @@ class PostDetailsViewModel @Inject constructor(
     }
 
     fun hideBottomSheet() = _bottomSheetItems.clear()
+
+    fun updateWatchlist() = viewModelScope.launch {
+        val isInWatchlist = _data.value.data!!.isInWatchlist
+        _data.value = DataResult.DataSuccess(_data.value.data!!.copy(isInWatchlist = !isInWatchlist))
+        repository.updateWatchlist(
+            _data.value.data!!.id,
+            if (isInWatchlist) "remove" else "add"
+        )
+    }
+
+    fun like() = viewModelScope.launch {
+        _likeStatus.value = 1
+        val likeInfo = repository.like(_data.value.data!!.id, "like")
+        if (likeInfo is DataResult.DataError) return@launch
+
+        _data.value = DataResult.DataSuccess(_data.value.data!!.copy(likeInfo = likeInfo.data!!))
+    }
+
+    fun dislike() = viewModelScope.launch {
+        _likeStatus.value = 2
+        val likeInfo = repository.like(_data.value.data!!.id, "dislike")
+        if (likeInfo is DataResult.DataError) return@launch
+
+        _data.value = DataResult.DataSuccess(_data.value.data!!.copy(likeInfo = likeInfo.data!!))
+    }
 
     private fun showMovieBottomSheet() {
         bottomSheetTitle = _data.value.data!!.title

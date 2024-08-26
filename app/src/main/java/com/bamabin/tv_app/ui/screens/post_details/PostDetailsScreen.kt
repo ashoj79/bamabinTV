@@ -16,15 +16,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Subscriptions
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.ClosedCaption
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.ThumbDown
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -33,9 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -68,6 +73,7 @@ import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import coil.compose.AsyncImage
 import com.bamabin.tv_app.R
+import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.ui.theme.AgeRateBox
 import com.bamabin.tv_app.ui.theme.Failed
 import com.bamabin.tv_app.ui.widgeta.EpisodeBox
@@ -87,6 +93,7 @@ fun PostDetailsScreen(
 
     val data by viewModel.data.collectAsState()
     val selectedSeason by viewModel.selectedSeason.collectAsState()
+    val likeStatus by viewModel.likeStatus.collectAsState()
     val bottomSheetItems = viewModel.bottomSheetItems
 
     val scrollState = rememberTvLazyListState()
@@ -135,7 +142,7 @@ fun PostDetailsScreen(
                     state = scrollState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(start = 8.dp),
+                        .padding(start = 16.dp),
                     horizontalAlignment = Alignment.Start,
                     contentPadding = PaddingValues(top = 40.dp)
                 ) {
@@ -415,6 +422,148 @@ fun PostDetailsScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+
+                    if (TempDB.isLogin.value) {
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                colors = ButtonDefaults.colors(
+                                    containerColor = Color.Transparent,
+                                    focusedContainerColor = Color.Transparent
+                                ),
+                                border = ButtonDefaults.border(
+                                    border = Border.None,
+                                    focusedBorder = Border(
+                                        border = BorderStroke(1.dp, Color.White),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                ),
+                                onClick = { viewModel.updateWatchlist() }) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = if (it.isInWatchlist) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                        contentDescription = "",
+                                        tint = Color.White
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = if (it.isInWatchlist) "حذف از علاقه‌مندی‌ها" else "افزودن به علاقه‌مندی‌ها",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            colors = ButtonDefaults.colors(
+                                containerColor = Color.Transparent,
+                                focusedContainerColor = Color.Transparent
+                            ),
+                            border = ButtonDefaults.border(
+                                border = Border.None,
+                                focusedBorder = Border(
+                                    border = BorderStroke(1.dp, Color.White),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                            ),
+                            onClick = { /*TODO*/ }) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.comments),
+                                    contentDescription = "",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    text = "نظرات کاربران",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                )
+                            }
+                        }
+                    }
+
+                    if (TempDB.isLogin.value) {
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Row {
+                                IconButton(
+                                    colors = ButtonDefaults.colors(
+                                        containerColor = Color.Black.copy(alpha = .5f),
+                                        focusedContainerColor = Color.Black.copy(alpha = .5f),
+                                    ),
+                                    border = ButtonDefaults.border(
+                                        border = Border.None,
+                                        focusedBorder = Border(
+                                            border = BorderStroke(1.dp, Color.White),
+                                            shape = CircleShape
+                                        )
+                                    ),
+                                    modifier = Modifier.padding(4.dp),
+                                    onClick = { viewModel.like() }
+                                ){
+                                    Icon(
+                                        imageVector = if (likeStatus == 1) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                                        contentDescription = "",
+                                        tint = Color.White
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                IconButton(
+                                    colors = ButtonDefaults.colors(
+                                        containerColor = Color.Black.copy(alpha = .5f),
+                                        focusedContainerColor = Color.Black.copy(alpha = .5f),
+                                    ),
+                                    border = ButtonDefaults.border(
+                                        border = Border.None,
+                                        focusedBorder = Border(
+                                            border = BorderStroke(1.dp, Color.White),
+                                            shape = CircleShape
+                                        )
+                                    ),
+                                    modifier = Modifier.padding(4.dp),
+                                    onClick = { viewModel.dislike() }
+                                ){
+                                    Icon(
+                                        imageVector = if (likeStatus == 2) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                                        contentDescription = "",
+                                        tint = Color.White
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = "(${it.likeInfo.likes + it.likeInfo.dislikes} رای) ${it.likeInfo.percent}",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = Color.White
+                                )
+                            )
                         }
                     }
 

@@ -5,6 +5,7 @@ import com.bamabin.tv_app.data.local.database.WatchDao
 import com.bamabin.tv_app.data.local.database.model.WatchData
 import com.bamabin.tv_app.data.remote.api_service.VideosApiService
 import com.bamabin.tv_app.data.remote.model.videos.HomeSection
+import com.bamabin.tv_app.data.remote.model.videos.LikeInfo
 import com.bamabin.tv_app.data.remote.model.videos.Post
 import com.bamabin.tv_app.data.remote.model.videos.PostDetails
 import com.bamabin.tv_app.utils.ConnectionChecker
@@ -94,6 +95,37 @@ class VideosRepository @Inject constructor(
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
 
             val response = videosApiService.getPostDetails(id)
+            if (!response.status)
+                return DataResult.DataError(response.message ?: "")
+
+            DataResult.DataSuccess(response.getMainResult()!!)
+        } catch (e: HttpException){
+            DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
+        } catch (e: Exception){
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
+    suspend fun updateWatchlist(id: Int, action: String): DataResult<Any> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            videosApiService.updateWatchList(id, action)
+            DataResult.DataSuccess("")
+        } catch (e: HttpException){
+            DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
+        } catch (e: Exception){
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
+    suspend fun like(id: Int, type: String): DataResult<LikeInfo> {
+        return try {
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = videosApiService.like(id, type)
             if (!response.status)
                 return DataResult.DataError(response.message ?: "")
 

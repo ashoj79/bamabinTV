@@ -30,6 +30,12 @@ data class PostDetails(
     val status: String,
     @SerializedName("age_rate")
     val ageRate: String,
+    @SerializedName("like_info")
+    val likeInfo: LikeInfo,
+    @SerializedName("is_in_watchlist")
+    val isInWatchlist: Boolean,
+    @SerializedName("is_free")
+    val isFree: Boolean,
     @SerializedName("time")
     private val time: Int,
     @SerializedName("genres_id")
