@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(
-                                route = "${Routes.POST_TYPE.name}?type={type}&broadcast_status={broadcast_status}&mini_serial={mini_serial}&order_by={order_by}&dlbox_type={dlbox_type}&title={title}",
+                                route = "${Routes.POST_TYPE.name}?type={type}&broadcast_status={broadcast_status}&mini_serial={mini_serial}&order_by={order_by}&dlbox_type={dlbox_type}&free={free}&title={title}",
                                 arguments = listOf(
                                     navArgument("type") {
                                         type = NavType.StringType
@@ -140,6 +140,10 @@ class MainActivity : ComponentActivity() {
                                         defaultValue = ""
                                     },
                                     navArgument("dlbox_type") {
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                    },
+                                    navArgument("free") {
                                         type = NavType.StringType
                                         defaultValue = ""
                                     },

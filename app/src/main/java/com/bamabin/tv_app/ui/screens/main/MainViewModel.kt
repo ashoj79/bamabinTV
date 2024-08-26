@@ -43,7 +43,8 @@ class MainViewModel @Inject constructor(
         val broadcastStatuses = _homeSections.value.data!![index].broadcastStatuses.joinToString(",")
         val miniSerial = if (_homeSections.value.data!![index].miniSerial) "yes" else ""
         val dlboxType = _homeSections.value.data!![index].dlboxType
+        val free = if (_homeSections.value.data!![index].isFree) "yes" else ""
 
-        return "${Routes.POST_TYPE.name}?type=$types&broadcast_status=$broadcastStatuses&mini_serial=$miniSerial&order_by=$order&dlbox_type=$dlboxType&title=$title"
+        return "${Routes.POST_TYPE.name}?type=$types&broadcast_status=$broadcastStatuses&mini_serial=$miniSerial&order_by=$order&dlbox_type=$dlboxType&title=$title&free=$free"
     }
 }

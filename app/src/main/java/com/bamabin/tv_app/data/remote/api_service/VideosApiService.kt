@@ -19,6 +19,7 @@ interface VideosApiService {
         @Query("broadcast_status") broadcastStatus: String,
         @Query("dlbox_type") dlboxType: String,
         @Query("mini_serial") miniSerial: String,
+        @Query("free") free: String,
         @Query("page") page: Int
     ): ApiResponse<List<Post>>
 

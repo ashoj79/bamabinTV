@@ -12,6 +12,7 @@ data class HomeSection(
     val dlboxType: String,
     val postTypes: List<String>,
     val orderBy: String,
+    val isFree: Boolean,
     val posts: List<Post>
 ) {
     companion object {
@@ -73,6 +74,7 @@ data class HomeSection(
             val taxonomy = if (data.has("taxonomy")) data.getString("taxonomy") else null
             val taxonomyId = if (data.has("taxonomy_id")) data.getString("taxonomy_id") else null
             val miniSerial = if (data.has("mini_serial") && taxonomy == null) data.getBoolean("mini_serial") else false
+            val isFree = if (data.has("free")) data.getBoolean("free") else false
             val dlboxType = if (data.has("dlbox_type")) data.getString("dlbox_type") else ""
             val orderBy = data.getString("order_by")
             return HomeSection(
@@ -84,6 +86,7 @@ data class HomeSection(
                 dlboxType,
                 postTypes,
                 orderBy,
+                isFree,
                 posts
             )
         }

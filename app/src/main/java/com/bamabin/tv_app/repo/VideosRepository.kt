@@ -37,12 +37,12 @@ class VideosRepository @Inject constructor(
         }
     }
 
-    suspend fun getPosts(type: String, orderBy: String, broadcastStatus: String, dlboxType: String, miniSerial: String, page: Int): DataResult<List<Post>> {
+    suspend fun getPosts(type: String, orderBy: String, broadcastStatus: String, dlboxType: String, miniSerial: String, free: String, page: Int): DataResult<List<Post>> {
         return try {
             if (!connectionChecker.isConnect())
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
 
-            val response = videosApiService.getPosts(type, orderBy, broadcastStatus, dlboxType, miniSerial, page)
+            val response = videosApiService.getPosts(type, orderBy, broadcastStatus, dlboxType, miniSerial, free, page)
             if (!response.status)
                 return DataResult.DataError(response.message ?: "")
 

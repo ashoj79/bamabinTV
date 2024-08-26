@@ -25,6 +25,7 @@ class PostTypeArchiveViewModel @Inject constructor(
     private val miniSerial = savedStateHandle["mini_serial"] ?: ""
     private val orderBy = savedStateHandle["order_by"] ?: ""
     private val dlboxType = savedStateHandle["dlbox_type"] ?: ""
+    private val free = savedStateHandle["free"] ?: ""
     val title = savedStateHandle["title"] ?: ""
 
     private val _isLoading = MutableStateFlow(true)
@@ -60,7 +61,7 @@ class PostTypeArchiveViewModel @Inject constructor(
         if (isEnd)return@launch
 
         _isLoading.value = true
-        val result = repository.getPosts(getType(), getOrderBy(), broadcastStatuses, dlboxType, miniSerial, page)
+        val result = repository.getPosts(getType(), getOrderBy(), broadcastStatuses, dlboxType, miniSerial, free, page)
         _isLoading.value = false
         if (result is DataResult.DataError) {
             return@launch
