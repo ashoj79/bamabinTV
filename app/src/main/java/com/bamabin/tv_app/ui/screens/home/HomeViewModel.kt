@@ -1,6 +1,7 @@
 package com.bamabin.tv_app.ui.screens.home
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.Logout
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.VideoCameraBack
 import androidx.compose.material.icons.filled.Window
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Login
 import androidx.compose.material.icons.outlined.Logout
@@ -61,7 +63,8 @@ class HomeViewModel @Inject constructor(): ViewModel() {
         MenuItem("سریال‌ها", Icons.Outlined.VideoCameraBack, Icons.Filled.VideoCameraBack, page = MenuPage.SERIES),
         MenuItem("انیمیشن‌ها", R.drawable.animation, page = MenuPage.ANIMATIONS),
         MenuItem("انیمه‌ها", R.drawable.anime, page = MenuPage.ANIME),
-        MenuItem("لیست‌ها", Icons.Outlined.Menu, Icons.Filled.Menu)
+        MenuItem("علاقه‌مندی‌ها", Icons.Outlined.Favorite, Icons.Filled.Favorite, route = Routes.WATCHLIST.name),
+        MenuItem("مشاهده‌های اخیر", Icons.Outlined.Menu, Icons.Filled.Menu, route = Routes.RECENTLY_VIEWED.name)
     )
 
     private var loginStatus = TempDB.isLogin.value

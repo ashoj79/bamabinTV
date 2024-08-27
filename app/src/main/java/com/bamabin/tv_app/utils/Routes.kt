@@ -13,4 +13,5 @@ enum class Routes {
     COMMENTS,
     COMMENT_FORM,
     RECENTLY_VIEWED,
+    WATCHLIST,
 }

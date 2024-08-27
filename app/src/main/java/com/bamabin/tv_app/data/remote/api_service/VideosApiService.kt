@@ -53,6 +53,11 @@ interface VideosApiService {
         @Field("action") action: String
     )
 
+    @GET("api/watchlist/list")
+    suspend fun getWatchList(
+        @Query("page") page: Int
+    ): ApiResponse<List<Post>>
+
     @GET("api/like/post/{post_id}/{type}")
     suspend fun like(
         @Path("post_id") postId: Int,
