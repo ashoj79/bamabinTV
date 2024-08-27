@@ -29,6 +29,7 @@ import com.bamabin.tv_app.ui.screens.request_form.RequestForm
 import com.bamabin.tv_app.ui.screens.splash.SplashScreen
 import com.bamabin.tv_app.ui.screens.subscribe.SubscribeScreen
 import com.bamabin.tv_app.ui.screens.taxonomy_posts.TaxonomyPosts
+import com.bamabin.tv_app.ui.screens.watch_list.WatchListsScreen
 import com.bamabin.tv_app.ui.theme.BamabinTVTheme
 import com.bamabin.tv_app.utils.Routes
 import dagger.hilt.android.AndroidEntryPoint
@@ -188,6 +189,12 @@ class MainActivity : ComponentActivity() {
                                 route = Routes.RECENTLY_VIEWED.name
                             ) {
                                 RecentlyViewedScreen(navHostController)
+                            }
+
+                            composable(
+                                route = Routes.WATCHLIST.name
+                            ) {
+                                WatchListsScreen(navHostController)
                             }
                         }
                     }
