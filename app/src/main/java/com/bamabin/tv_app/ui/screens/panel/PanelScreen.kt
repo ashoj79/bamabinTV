@@ -381,7 +381,7 @@ private fun Transactions(
                             textColor = Color.White
                         )
                         TableCell(
-                            text = transactions[it].authority,
+                            text = transactions[it].authority ?: "",
                             weight = 1.8f,
                             textColor = Color.White
                         )

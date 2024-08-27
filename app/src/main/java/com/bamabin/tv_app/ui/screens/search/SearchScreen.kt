@@ -215,7 +215,7 @@ fun SearchScreen(
                             containerColor = Color.Transparent
                         ),
                         scale = CardDefaults.scale(focusedScale = 1f),
-                        onClick = { /*TODO*/ }) {
+                        onClick = { navHostController.navigate("${Routes.POST_DETAILS.name}/${TempDB.promotions[it].id}") }) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
