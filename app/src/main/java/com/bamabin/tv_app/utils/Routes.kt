@@ -12,4 +12,5 @@ enum class Routes {
     POST_TYPE,
     COMMENTS,
     COMMENT_FORM,
+    RECENTLY_VIEWED,
 }

@@ -24,6 +24,7 @@ import com.bamabin.tv_app.ui.screens.login.LoginScreen
 import com.bamabin.tv_app.ui.screens.home.HomeScreen
 import com.bamabin.tv_app.ui.screens.player.PlayerScreen
 import com.bamabin.tv_app.ui.screens.post_details.PostDetailsScreen
+import com.bamabin.tv_app.ui.screens.recently_viewed.RecentlyViewedScreen
 import com.bamabin.tv_app.ui.screens.request_form.RequestForm
 import com.bamabin.tv_app.ui.screens.splash.SplashScreen
 import com.bamabin.tv_app.ui.screens.subscribe.SubscribeScreen
@@ -181,6 +182,12 @@ class MainActivity : ComponentActivity() {
                                 )
                             ){
                                 CommentFormScreen(navHostController)
+                            }
+
+                            composable(
+                                route = Routes.RECENTLY_VIEWED.name
+                            ) {
+                                RecentlyViewedScreen(navHostController)
                             }
                         }
                     }

@@ -16,4 +16,5 @@ data class WatchData(
     val episode: Int = -1,
     val audioTrack: Int = -1,
     val subtitleTrack: Int = -1,
+    val updatedAt: Long = 0L
 )

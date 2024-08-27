@@ -17,6 +17,18 @@ interface WatchDao {
     @Query("DELETE FROM WatchData")
     suspend fun deleteAll()
 
+    @Query("DELETE FROM WatchData WHERE id=:id")
+    suspend fun deleteWithId(id: Int)
+
     @Query("SELECT * FROM WatchData WHERE id=:id")
     suspend fun getData(id: Int): WatchData
+
+    @Query("SELECT id FROM WatchData")
+    suspend fun getAllIds(): List<Int>
+
+    @Query("SELECT COUNT(*) FROM WatchData WHERE id!=:id")
+    suspend fun getOtherCount(id: Int): Int
+
+    @Query("SELECT id FROM WatchData ORDER BY updatedAt LIMIT 1")
+    suspend fun getOldestId(): Int
 }

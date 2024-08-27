@@ -58,4 +58,10 @@ interface VideosApiService {
         @Path("post_id") postId: Int,
         @Path("type") type: String
     ): ApiResponse<LikeInfo>
+
+    @POST("api/archive/specific_posts")
+    @FormUrlEncoded
+    suspend fun getSpecificPosts(
+        @Field("ids") ids: String
+    ): ApiResponse<List<Post>>
 }

@@ -20,8 +20,14 @@ class VideosRepository @Inject constructor(
 ) {
 
     suspend fun getWatchData(id: Int)= watchDao.getData(id)
-    suspend fun saveWatchData(data: WatchData)= watchDao.saveOrUpdate(data)
     suspend fun deleteWatchData(data: WatchData)= watchDao.delete(data)
+    suspend fun deleteWatchDataWithId(id: Int)= watchDao.deleteWithId(id)
+    suspend fun saveWatchData(data: WatchData) {
+        if (watchDao.getOtherCount(data.id) >= 50){
+            watchDao.deleteWithId(watchDao.getOldestId())
+        }
+        watchDao.saveOrUpdate(data.copy(updatedAt = System.currentTimeMillis()))
+    }
 
     suspend fun getHomeSections(): DataResult<List<HomeSection>> {
         return try {
@@ -126,6 +132,27 @@ class VideosRepository @Inject constructor(
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
 
             val response = videosApiService.like(id, type)
+            if (!response.status)
+                return DataResult.DataError(response.message ?: "")
+
+            DataResult.DataSuccess(response.getMainResult()!!)
+        } catch (e: HttpException){
+            DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
+        } catch (e: Exception){
+            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        }
+    }
+
+    suspend fun getRecentlyViewed(): DataResult<List<Post>> {
+        return try {
+            val ids = watchDao.getAllIds()
+            if (ids.isEmpty())
+                return DataResult.DataSuccess(emptyList())
+
+            if (!connectionChecker.isConnect())
+                return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
+
+            val response = videosApiService.getSpecificPosts(ids.joinToString(","))
             if (!response.status)
                 return DataResult.DataError(response.message ?: "")
 
