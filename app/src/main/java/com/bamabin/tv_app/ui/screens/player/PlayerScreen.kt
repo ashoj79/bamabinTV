@@ -130,6 +130,7 @@ fun PlayerScreen(
     val currentTime by viewModel.currentTime.collectAsState()
     val showAudioAlert by viewModel.showAudioAlert.collectAsState()
     val showSubtitleAlert by viewModel.showSubtitleAlert.collectAsState()
+    val showQualitiesAlert by viewModel.showQualityAlert.collectAsState()
     val subtitleStyle by viewModel.subtitleStyle.collectAsState()
     val aspectRatio by viewModel.aspectRatio.collectAsState()
     val subtitleSize by viewModel.subtitleSize.collectAsState()
@@ -411,6 +412,19 @@ fun PlayerScreen(
                 Icon(imageVector = Icons.Outlined.Settings, contentDescription = "", tint = Color.White)
             }
 
+            IconButton(
+                colors = ButtonDefaults.colors(
+                    containerColor = Color.Transparent,
+                    focusedContainerColor = Color.White.copy(0.3f),
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .offset(x = 48.dp)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
+                onClick = { viewModel.showQualities() }) {
+                Icon(imageVector = Icons.Outlined.DisplaySettings, contentDescription = "", tint = Color.White)
+            }
+
             if (audios.size > 1) {
                 IconButton(
                     colors = ButtonDefaults.colors(
@@ -419,7 +433,7 @@ fun PlayerScreen(
                     ),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .offset(x = 48.dp)
+                        .offset(x = 96.dp)
                         .focusProperties { canFocus = !showSetting && !showSeasons },
                     onClick = { viewModel.showAudioAlert() }) {
                     Icon(imageVector = Icons.Filled.Mic, contentDescription = "", tint = Color.White)
@@ -435,7 +449,7 @@ fun PlayerScreen(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .offset(
-                            x = if (audios.size > 1) 96.dp else 48.dp
+                            x = if (audios.size > 1) 144.dp else 96.dp
                         )
                         .focusProperties { canFocus = !showSetting && !showSeasons },
                     onClick = { viewModel.showSubtitleAlert() }) {
@@ -452,7 +466,7 @@ fun PlayerScreen(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .offset(
-                            x = ((minOf(1, audios.size) + minOf(1, subtitles.size)) * 48).dp
+                            x = ((minOf(1, audios.size) + minOf(1, subtitles.size) + 1) * 48).dp
                         )
                         .focusProperties { canFocus = !showSetting && !showSeasons },
                     onClick = { viewModel.showSeasons() }) {
@@ -500,6 +514,12 @@ fun PlayerScreen(
             onEpisodeClick = { viewModel.changeEpisode(it) },
             onCloseClick = { viewModel.hideSeasons() }
         )
+    }
+
+    if (showQualitiesAlert) {
+        QualitiesAlert(qualities = viewModel.qualities, selectedQuality = viewModel.qualityIndex) {
+            viewModel.changeQuality(it)
+        }
     }
 }
 
@@ -619,6 +639,74 @@ private fun AudioAlert(viewModel: PlayerViewModel = hiltViewModel()) {
                         onClick = { viewModel.setAudio(i) }) {
                         Text(
                             text = audios[i],
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = if (focusedIndex == i) Color.Black else Color.Gray,
+                            ),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(all = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun QualitiesAlert(
+    qualities: Map<Int, String>,
+    selectedQuality: Int,
+    onClick: (index: Int) -> Unit
+) {
+    var focusedIndex by remember { mutableIntStateOf(selectedQuality) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        try {
+            focusRequester.requestFocus()
+        }catch (_: Exception){}
+    }
+
+    AlertDialog(
+        containerColor = Color(0xFF2B2B2B),
+        onDismissRequest = {},
+        confirmButton = {},
+        text = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "انتخاب کیفیت",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700, color = Color.White),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                for (i in qualities.values.indices) {
+                    var modifier = Modifier
+                        .padding(all = 8.dp)
+                        .onFocusChanged {
+                            if (it.isFocused) focusedIndex = i
+                        }
+
+                    if (i == selectedQuality)
+                        modifier = modifier.focusRequester(focusRequester)
+
+                    Card(
+                        colors = CardDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.White
+                        ),
+                        border = CardDefaults.border(
+                            focusedBorder = Border.None
+                        ),
+                        modifier = modifier,
+                        onClick = { onClick(i) }) {
+                        Text(
+                            text = qualities.values.elementAt(i),
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 color = if (focusedIndex == i) Color.Black else Color.Gray,
                             ),

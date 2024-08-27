@@ -59,6 +59,9 @@ class PlayerViewModel @Inject constructor(
     private val _showAudioAlert = MutableStateFlow(false)
     val showAudioAlert: StateFlow<Boolean> = _showAudioAlert
 
+    private val _showQualityAlert = MutableStateFlow(false)
+    val showQualityAlert: StateFlow<Boolean> = _showQualityAlert
+
     private val _showSetting = MutableStateFlow(false)
     val showSetting: StateFlow<Boolean> = _showSetting
 
@@ -119,6 +122,8 @@ class PlayerViewModel @Inject constructor(
         private set
     var wholeTime = "00:00:00"
         private set
+    var qualityIndex = 0
+        private set
     val title: String
         get() {
             return if (TempDB.selectedPost!!.isSeries) {
@@ -135,6 +140,7 @@ class PlayerViewModel @Inject constructor(
         get() = TempDB.selectedPost!!.seasons!![_selectedSeasonIndex.value].episodes
     val thumbnail: String
         get() = TempDB.selectedPost!!.bgThumbnail
+    val qualities = mutableMapOf<Int, String>()
 
     val playbackSpeeds = listOf("0.75x", "1.0x", "1.25x", "1.5x", "2.0x")
     val backgroundColors = listOf("مشکی", "تیره کم‌رنگ", "بی‌رنگ")
@@ -162,6 +168,7 @@ class PlayerViewModel @Inject constructor(
     private var timerJob: Job? = null
     private var isEnd = false
     private var watchData: WatchData? = null
+    private var previousPosition = 0L
 
     init {
         viewModelScope.launch { watchData = videosRepository.getWatchData(TempDB.selectedPost!!.id) }
@@ -351,6 +358,45 @@ class PlayerViewModel @Inject constructor(
         player.playbackParameters = PlaybackParameters(speed)
     }
 
+    fun showQualities() {
+        val q =
+            if (TempDB.selectedPost!!.isSeries) {
+                TempDB.selectedPost!!.seasons!![seasonIndex].episodes[episodeIndex].items.getQualities(itemIndex)
+            } else {
+                TempDB.selectedPost!!.movieDownloadBox!!.getQualities(itemIndex)
+            }
+
+        val data =
+            if (TempDB.selectedPost!!.isSeries) {
+                TempDB.selectedPost!!.seasons!![seasonIndex].episodes[episodeIndex].items.getItemInfo(itemIndex)
+            } else {
+                TempDB.selectedPost!!.movieDownloadBox!!.getItemInfo(itemIndex)
+            }
+
+        if (player.isPlaying) player.pause()
+        qualityIndex = q.values.indexOf(data[1])
+        qualities.clear()
+        q.forEach { (t, u) ->
+            qualities[t] = u
+        }
+        _showQualityAlert.value = true
+    }
+
+    fun changeQuality(index: Int) {
+        _showQualityAlert.value = false
+        val iIndex = qualities.keys.elementAt(index)
+
+        if (iIndex == itemIndex) {
+            player.play()
+            return
+        }
+
+        itemIndex = iIndex
+        previousPosition = player.currentPosition
+        isDataExtracted = false
+        setupPlayer()
+    }
+
     fun showSeasons() {
         player.pause()
         _selectedSeasonIndex.value = seasonIndex
@@ -466,6 +512,11 @@ class PlayerViewModel @Inject constructor(
         setPreviousWatchData()
         updateDuration()
         startHideTimer()
+
+        audiosId.clear()
+        subtitlesId.clear()
+        audios.clear()
+        subtitles.clear()
 
         val mappedTrackInfo = trackSelector.currentMappedTrackInfo
         mappedTrackInfo?.let {
@@ -596,9 +647,13 @@ class PlayerViewModel @Inject constructor(
 
     private fun setPreviousWatchData() = viewModelScope.launch {
         delay(1000)
+        if (previousPosition > 0 && player.duration >= previousPosition){
+            player.seekTo(previousPosition)
+        }
         watchData?.let {
             if (
                 duration > it.time.toFloat() &&
+                previousPosition == 0L &&
                 ((TempDB.selectedPost!!.isSeries && seasonIndex == it.season && episodeIndex == it.episode) ||
                         (!TempDB.selectedPost!!.isSeries))
             ) {

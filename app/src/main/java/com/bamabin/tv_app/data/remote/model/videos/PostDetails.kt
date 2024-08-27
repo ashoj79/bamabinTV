@@ -142,6 +142,29 @@ data class DownloadBox(
         return listOf("screen", screen[i].quality, screen[i].qualityCode, screen[i].encoder)
     }
 
+    fun getQualities(index: Int): Map<Int, String> {
+        val type = getItemInfo(index).first()
+        val items = when(type) {
+            "dubbed" -> dubbed
+            "subtitle" -> subtitle
+            "native" -> native
+            else -> screen
+        }
+        val qualities = mutableMapOf<Int, String>()
+        val aditionalIndex = when(type) {
+            "dubbed" -> 0
+            "subtitle" -> dubbed.size
+            "native" -> dubbed.size + subtitle.size
+            else -> dubbed.size + subtitle.size + native.size
+        }
+
+        items.forEachIndexed { i, itemInfo ->
+            qualities[aditionalIndex + i] = itemInfo.quality
+        }
+
+        return qualities
+    }
+
     fun getSimilarIndex(data: List<String>): Int {
         val types = getSortedType(data[0])
         val items = mutableListOf<ItemInfo>()
