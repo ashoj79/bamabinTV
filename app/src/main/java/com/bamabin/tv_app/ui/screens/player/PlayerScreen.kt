@@ -52,6 +52,7 @@ import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material.icons.outlined.FontDownload
 import androidx.compose.material.icons.outlined.FormatSize
+import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SlowMotionVideo
@@ -341,7 +342,7 @@ fun PlayerScreen(
                     .align(Alignment.BottomEnd)
                     .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.changeAspectRatio() }) {
-                Icon(imageVector = Icons.Outlined.AspectRatio, contentDescription = "", tint = Color.White)
+                Icon(imageVector = Icons.Outlined.Fullscreen, contentDescription = "", tint = Color.White)
             }
 
             IconButton(
