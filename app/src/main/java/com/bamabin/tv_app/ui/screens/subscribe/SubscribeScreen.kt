@@ -133,14 +133,7 @@ fun SubscribeScreen(
     }
 
     if (result is DataResult.DataError)
-        ErrorDialog(message = result!!.message) {
-            viewModel.retry()
-        }
-
-    if (urlResult is DataResult.DataError)
-        ErrorDialog(message = urlResult.message) {
-            viewModel.getUrl()
-        }
+        ErrorDialog(message = result!!.message, onRetryClick = {viewModel.retry()}, onCloseClick = {viewModel.retry()})
 
     if (result is DataResult.DataSuccess)
         LoadingDialog()

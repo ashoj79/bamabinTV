@@ -126,8 +126,6 @@ fun RecentlyViewedScreen(
     }
 
     if (postsResult is DataResult.DataError) {
-        ErrorDialog(message = postsResult.message) {
-            viewModel.getPosts()
-        }
+        ErrorDialog(message = postsResult.message, onCloseClick = {viewModel.closeError()}, onRetryClick = {viewModel.closeError()})
     }
 }

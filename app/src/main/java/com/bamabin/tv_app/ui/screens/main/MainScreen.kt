@@ -55,9 +55,7 @@ fun MainScreen(navHostController: NavHostController, mainViewModel: MainViewMode
     }
 
     if (result is DataResult.DataError) {
-        ErrorDialog(message = result.message) {
-            mainViewModel.getSection()
-        }
+        ErrorDialog(message = result.message, onCloseClick = {mainViewModel.closeError()}, onRetryClick = {mainViewModel.getSection()})
     }
 }
 

@@ -28,6 +28,10 @@ class MainViewModel @Inject constructor(
         _homeSections.value = repository.getHomeSections()
     }
 
+    fun closeError() {
+        _homeSections.value = DataResult.DataLoading()
+    }
+
     fun getMoreRoute(index: Int): String {
         val title = _homeSections.value.data!![index].name
         var taxonomy = _homeSections.value.data!![index].taxonomy

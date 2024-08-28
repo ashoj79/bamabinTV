@@ -247,7 +247,5 @@ fun RequestForm(
         LoadingDialog()
 
     if (result is DataResult.DataError)
-        ErrorDialog(message = result?.message?:"") {
-            viewModel.retry()
-        }
+        ErrorDialog(message = result?.message?:"", onRetryClick = {viewModel.retry()}, onCloseClick = {viewModel.retry()})
 }

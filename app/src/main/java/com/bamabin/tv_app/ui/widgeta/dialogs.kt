@@ -1,25 +1,39 @@
 package com.bamabin.tv_app.ui.widgeta
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.Border
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
+import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import com.bamabin.tv_app.data.remote.model.app.AppVersion
+import com.bamabin.tv_app.ui.theme.Failed
 import com.bamabin.tv_app.utils.SITE_BASE_URL
+import kotlin.system.exitProcess
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -27,17 +41,41 @@ fun UpdateDialog(appVersion: AppVersion) {
     val uriHandler = LocalUriHandler.current
 
     AlertDialog(
+        shape = RoundedCornerShape(8.dp),
         containerColor = Color(0xFF2B2B2B),
         onDismissRequest = {},
         confirmButton = {},
         text = {
             Column {
-                Text(
-                    text = "بروزرسانی",
-                    style = MaterialTheme.typography.titleLarge.copy(Color.White, fontWeight = FontWeight.W700),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "بروزرسانی",
+                        style = MaterialTheme.typography.titleLarge.copy(Color.White, fontWeight = FontWeight.W700),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    IconButton(
+                        colors = ButtonDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                        border = ButtonDefaults.border(
+                            border = Border.None,
+                            focusedBorder = Border(
+                                border = BorderStroke(1.dp, Color.White)
+                            )
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        onClick = { exitProcess(0) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Cancel,
+                            contentDescription = "",
+                            tint = Failed
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "نسخه جدیدی از برنامه منتشر شده است. برای استفاده از آخرین امکانات لطفا برنامه را بروزرسانی کنید",
@@ -73,25 +111,53 @@ fun UpdateDialog(appVersion: AppVersion) {
 fun ErrorDialog(
     title: String = "مشکلی رخ داد",
     message: String,
-    onRetryClick: () -> Unit
+    onCloseClick: () -> Unit,
+    onRetryClick: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
 
     AlertDialog(
+        shape = RoundedCornerShape(8.dp),
         containerColor = Color(0xFF2B2B2B),
         onDismissRequest = {},
         confirmButton = {},
         text = {
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        Color.White,
-                        fontWeight = FontWeight.W700
-                    ),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            Color.White,
+                            fontWeight = FontWeight.W700
+                        ),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    IconButton(
+                        colors = ButtonDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                        border = ButtonDefaults.border(
+                            border = Border.None,
+                            focusedBorder = Border(
+                                border = BorderStroke(1.dp, Color.White)
+                            )
+                        ),
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        onClick = onCloseClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Cancel,
+                            contentDescription = "",
+                            tint = Failed
+                        )
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = message,
@@ -131,6 +197,20 @@ fun ErrorDialog(
                             color = Color.White
                         ),
                         modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "در صورت بروز مشکل با پشتیبانی تلگرام در ارتباط باشید",
+                    style = MaterialTheme.typography.bodyLarge.copy(color = Color.White),
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Text(
+                        text = "@Bamabin_Support",
+                        style = MaterialTheme.typography.titleMedium.copy(color = Color.White, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
                     )
                 }
             }

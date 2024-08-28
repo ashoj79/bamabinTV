@@ -44,9 +44,9 @@ class HomeViewModel @Inject constructor(): ViewModel() {
 
     private val notLoggedInMenuItems = listOf(
         MenuItem("ورود", Icons.Outlined.Login, Icons.Filled.Login, route = Routes.LOGIN.name),
+        MenuItem("جستجو", Icons.Outlined.Search, Icons.Filled.Search, page = MenuPage.SEARCH),
         MenuItem("خانه", Icons.Outlined.Home, Icons.Filled.Home, true, page = MenuPage.HOME),
         MenuItem("دسته‌بندی‌ها", Icons.Outlined.Window, Icons.Filled.Window, page = MenuPage.GENRES),
-        MenuItem("جستجو", Icons.Outlined.Search, Icons.Filled.Search, page = MenuPage.SEARCH),
         MenuItem("فیلم‌ها", Icons.Outlined.Movie, Icons.Filled.Movie, page = MenuPage.MOVIES),
         MenuItem("سریال‌ها", Icons.Outlined.VideoCameraBack, Icons.Filled.VideoCameraBack, page = MenuPage.SERIES),
         MenuItem("انیمیشن‌ها", R.drawable.animation, page = MenuPage.ANIMATIONS),
@@ -54,10 +54,10 @@ class HomeViewModel @Inject constructor(): ViewModel() {
     )
 
     private val loggedInMenuItems = listOf(
+        MenuItem("جستجو", Icons.Outlined.Search, Icons.Filled.Search, page = MenuPage.SEARCH),
         MenuItem("خانه", Icons.Outlined.Home, Icons.Filled.Home, true, page = MenuPage.HOME),
         MenuItem("خرید اشتراک", Icons.Outlined.ShoppingCart, Icons.Filled.ShoppingCart, route = Routes.SUBSCRIBE.name),
         MenuItem("دسته‌بندی‌ها", Icons.Outlined.Window, Icons.Filled.Window, page = MenuPage.GENRES),
-        MenuItem("جستجو", Icons.Outlined.Search, Icons.Filled.Search, page = MenuPage.SEARCH),
         MenuItem("پنل کاربری", Icons.Outlined.PersonOutline, Icons.Filled.Person, page = MenuPage.PANEL),
         MenuItem("فیلم ها", Icons.Outlined.Movie, Icons.Filled.Movie, page = MenuPage.MOVIES),
         MenuItem("سریال‌ها", Icons.Outlined.VideoCameraBack, Icons.Filled.VideoCameraBack, page = MenuPage.SERIES),
@@ -69,7 +69,7 @@ class HomeViewModel @Inject constructor(): ViewModel() {
 
     private var loginStatus = TempDB.isLogin.value
 
-    private val _selectedMenuIndex = MutableStateFlow(if (loginStatus) 0 else 1)
+    private val _selectedMenuIndex = MutableStateFlow(if (loginStatus) 1 else 2)
     val selectedMenuIndex:StateFlow<Int> = _selectedMenuIndex
 
     fun updateSelectedMenu(index: Int) {
@@ -82,7 +82,7 @@ class HomeViewModel @Inject constructor(): ViewModel() {
         if (loginStatus == TempDB.isLogin.value)return
 
         loginStatus = TempDB.isLogin.value
-        if (loginStatus) updateSelectedMenu(0)
-        else updateSelectedMenu(1)
+        if (loginStatus) updateSelectedMenu(1)
+        else updateSelectedMenu(2)
     }
 }

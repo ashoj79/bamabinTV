@@ -32,6 +32,10 @@ class CommentsViewModel @Inject constructor(
         _result.value = repository.getComments(id)
     }
 
+    fun closeError() {
+        _result.value = DataResult.DataLoading()
+    }
+
     fun like(id: Int) = viewModelScope.launch {
         repository.likeComment(id, "like")
     }

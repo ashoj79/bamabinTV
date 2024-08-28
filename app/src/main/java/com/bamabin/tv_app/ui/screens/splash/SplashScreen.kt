@@ -45,6 +45,7 @@ import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.ui.widgeta.UpdateDialog
 import com.bamabin.tv_app.utils.DataResult
 import com.bamabin.tv_app.utils.Routes
+import kotlin.system.exitProcess
 
 @Composable
 fun SplashScreen(
@@ -84,9 +85,7 @@ fun SplashScreen(
             if (result is DataResult.DataLoading) {
                 LoadingWidget(showText = false)
             } else if (result is DataResult.DataError) {
-                ErrorDialog(message = result.message) {
-                    viewModel.fetchData()
-                }
+                ErrorDialog(message = result.message, onCloseClick = { exitProcess(0) }, onRetryClick = {viewModel.fetchData()})
             }
         }
 

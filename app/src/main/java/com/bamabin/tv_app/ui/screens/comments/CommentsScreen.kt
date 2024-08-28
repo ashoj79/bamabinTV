@@ -141,9 +141,7 @@ fun CommentsScreen(
         LoadingWidget()
 
     if (result is DataResult.DataError)
-        ErrorDialog(message = result.message) {
-            viewModel.getComments()
-        }
+        ErrorDialog(message = result.message, onCloseClick = {viewModel.closeError()}, onRetryClick = {viewModel.getComments()})
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)

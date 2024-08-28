@@ -28,6 +28,10 @@ class RecentlyViewedViewModel @Inject constructor(
         _postsResult.value = repository.getRecentlyViewed()
     }
 
+    fun closeError() {
+        _postsResult.value = DataResult.DataLoading()
+    }
+
     fun delete(index: Int) = viewModelScope.launch {
         val posts = mutableListOf<Post>()
         posts.addAll(_postsResult.value.data ?: emptyList())

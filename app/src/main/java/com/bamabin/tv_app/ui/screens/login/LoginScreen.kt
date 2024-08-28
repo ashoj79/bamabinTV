@@ -352,7 +352,5 @@ fun LoginScreen(
         LoadingDialog()
 
     if (loginStatus is DataResult.DataError)
-        ErrorDialog(message = loginStatus?.message ?: "") {
-            viewModel.retry()
-        }
+        ErrorDialog(message = loginStatus?.message ?: "", onRetryClick = {viewModel.retry()}, onCloseClick = {viewModel.retry()})
 }

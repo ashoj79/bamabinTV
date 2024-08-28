@@ -224,9 +224,7 @@ fun PanelScreen(
     }
 
     if (errorMessage.isNotEmpty()){
-        ErrorDialog(message = errorMessage) {
-            viewModel.hideErrorDialog()
-        }
+        ErrorDialog(message = errorMessage, onRetryClick = {viewModel.hideErrorDialog()}, onCloseClick = {viewModel.hideErrorDialog()})
     }
 }
 
