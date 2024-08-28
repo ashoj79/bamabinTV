@@ -45,7 +45,7 @@ data class Transaction(
         persianDate.minute = timeParts[1].toInt()
         persianDate.second = timeParts[2].toInt()
 
-        val pFormater = PersianDateFormat("d - m - Y H:i:s")
+        val pFormater = PersianDateFormat("Y - m - d H:i:s")
         return pFormater.format(persianDate)
     }
 }
