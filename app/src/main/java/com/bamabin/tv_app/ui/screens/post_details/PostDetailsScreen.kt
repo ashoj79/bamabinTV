@@ -1,5 +1,7 @@
 package com.bamabin.tv_app.ui.screens.post_details
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.material.icons.filled.ThumbUp
@@ -40,11 +43,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -100,6 +106,7 @@ fun PostDetailsScreen(
     val scrollState = rememberTvLazyListState()
     val defaultFocusRequester = remember { FocusRequester() }
     val showSeasons by viewModel.showSeasons.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     LaunchedEffect(showSeasons) {
         if (showSeasons) scrollState.scrollToItem(8)
@@ -423,6 +430,45 @@ fun PostDetailsScreen(
                                     )
                                 }
                             }
+
+                            if (viewModel.shouldShowReplayButton()){
+                                Spacer(modifier = Modifier.width(24.dp))
+
+                                Button(
+                                    colors = ButtonDefaults.colors(
+                                        containerColor = Color.Black.copy(alpha = .5f),
+                                        focusedContainerColor = Color.Black.copy(alpha = .5f)
+                                    ),
+                                    border = ButtonDefaults.border(
+                                        border = Border.None,
+                                        focusedBorder = Border(
+                                            border = BorderStroke(1.dp, Color.White),
+                                            shape = RoundedCornerShape(4.dp)
+                                        )
+                                    ),
+                                    shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
+                                    onClick = {
+                                        viewModel.showMovieBottomSheet()
+                                    }) {
+                                    Row {
+                                        Icon(
+                                            imageVector = Icons.Filled.Refresh,
+                                            contentDescription = "",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = "از سرگیری پخش",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            color = Color.White
+                                        )
+                                    )
+                                }
+                            }
                         }
                     }
 
@@ -644,7 +690,6 @@ fun PostDetailsScreen(
             title = viewModel.bottomSheetTitle,
             items = bottomSheetItems,
             onCloseRequest = { viewModel.hideBottomSheet() },
-            onDownloadClick = {},
             onPlayClick = {
                 val route = viewModel.playItem(it)
                 route?.let {
@@ -652,6 +697,12 @@ fun PostDetailsScreen(
                 }
             }
         )
+    }
+
+    if (errorMessage.isNotEmpty()) {
+        ErrorDialog(message = errorMessage) {
+            viewModel.hideErrorDialog()
+        }
     }
 }
 
@@ -661,10 +712,10 @@ private fun ItemsBottomSheet(
     title: String,
     items: List<String>,
     onCloseRequest: () -> Unit,
-    onDownloadClick: (index: Int) -> Unit,
     onPlayClick: (index: Int) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var focusedItemIndex by remember { mutableIntStateOf(-1) }
 
     ModalBottomSheet(
         containerColor = Color.Black.copy(alpha = 0.7f),
@@ -725,7 +776,7 @@ private fun ItemsBottomSheet(
                     modifier = Modifier
                         .padding(bottom = 16.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.primary,
+                            color = if (focusedItemIndex == it) MaterialTheme.colorScheme.primary else Color(0xFF2B2B2B),
                             shape = RoundedCornerShape(16.dp)
                         )
                         .padding(all = 24.dp)
@@ -750,27 +801,10 @@ private fun ItemsBottomSheet(
                                 border = BorderStroke(1.dp, Color.White)
                             )
                         ),
-                        onClick = { onDownloadClick(it) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Download,
-                            contentDescription = "",
-                            tint = Color.White
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(24.dp))
-
-                    IconButton(
-                        colors = ButtonDefaults.colors(
-                            containerColor = Color.Transparent,
-                            focusedContainerColor = Color.Transparent
-                        ),
-                        border = ButtonDefaults.border(
-                            border = Border.None,
-                            focusedBorder = Border(
-                                border = BorderStroke(1.dp, Color.White)
-                            )
-                        ),
+                        modifier = Modifier.onFocusChanged { focusState ->
+                            focusedItemIndex = if (focusState.isFocused) it
+                            else -1
+                        },
                         onClick = { onPlayClick(it) }) {
                         Icon(
                             imageVector = Icons.Filled.PlayArrow,

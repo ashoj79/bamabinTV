@@ -1,5 +1,9 @@
 package com.bamabin.tv_app.ui.screens.post_details
 
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
@@ -47,6 +51,9 @@ class PostDetailsViewModel @Inject constructor(
     private val _showSeasons = MutableStateFlow(false)
     val showSeasons: StateFlow<Boolean> = _showSeasons
 
+    private val _errorMessage = MutableStateFlow("")
+    val errorMessage:StateFlow<String> = _errorMessage
+
     init {
         getDetails()
     }
@@ -80,6 +87,8 @@ class PostDetailsViewModel @Inject constructor(
     }
 
     fun play(): String? {
+        if (!canSeeVideo()) return null
+
         try {
             watchData?.let {
                 TempDB.setSelectedPost(_data.value.data)
@@ -111,6 +120,8 @@ class PostDetailsViewModel @Inject constructor(
     }
 
     fun playItem(itemIndex: Int): String? {
+        if (!canSeeVideo()) return null
+
         _bottomSheetItems.clear()
         TempDB.setSelectedPost(_data.value.data)
         isWatched = true
@@ -128,6 +139,12 @@ class PostDetailsViewModel @Inject constructor(
     }
 
     fun hideBottomSheet() = _bottomSheetItems.clear()
+
+    fun hideErrorDialog() {
+        _errorMessage.value = ""
+    }
+
+    fun shouldShowReplayButton() = !_data.value.data!!.isSeries && watchData != null
 
     fun updateWatchlist() = viewModelScope.launch {
         val isInWatchlist = _data.value.data!!.isInWatchlist
@@ -154,9 +171,23 @@ class PostDetailsViewModel @Inject constructor(
         _data.value = DataResult.DataSuccess(_data.value.data!!.copy(likeInfo = likeInfo.data!!))
     }
 
-    private fun showMovieBottomSheet() {
+    fun showMovieBottomSheet() {
         bottomSheetTitle = _data.value.data!!.title
         if (_bottomSheetItems.isNotEmpty()) _bottomSheetItems.clear()
         _bottomSheetItems.addAll(_data.value.data!!.movieDownloadBox!!.getAllItemsName())
+    }
+
+    private fun canSeeVideo(): Boolean{
+        if (!TempDB.isLogin.value || TempDB.vipInfo == null) {
+            _errorMessage.value = "لطفا ابتدا وارد حساب کاربری خود شوید"
+            return false
+        }
+
+        if (!TempDB.vipInfo!!.isVip && !_data.value.data!!.isFree) {
+            _errorMessage.value = "برای تماشای ویدئو باید اشتراک خریداری کنید"
+            return false
+        }
+
+        return true
     }
 }
