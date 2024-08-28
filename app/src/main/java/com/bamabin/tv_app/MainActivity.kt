@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                                     },
                                 )
                             ) {
-                                PlayerScreen(navHostController)
+                                PlayerScreen()
                             }
 
                             composable(

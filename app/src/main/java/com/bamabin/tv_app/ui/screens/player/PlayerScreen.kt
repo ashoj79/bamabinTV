@@ -2,8 +2,12 @@ package com.bamabin.tv_app.ui.screens.player
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Typeface
 import android.view.KeyEvent
+import android.view.View.GONE
 import android.view.WindowManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
@@ -12,6 +16,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -37,11 +42,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.outlined.AspectRatio
 import androidx.compose.material.icons.outlined.Cancel
+import androidx.compose.material.icons.outlined.DisplaySettings
 import androidx.compose.material.icons.outlined.FontDownload
 import androidx.compose.material.icons.outlined.FormatSize
 import androidx.compose.material.icons.outlined.Palette
@@ -73,7 +81,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalConfiguration
@@ -84,9 +96,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.core.content.res.ResourcesCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.tv.foundation.lazy.list.TvLazyColumn
@@ -104,16 +119,20 @@ import com.bamabin.tv_app.R
 import com.bamabin.tv_app.data.remote.model.videos.EpisodeInfo
 import com.bamabin.tv_app.ui.theme.Failed
 import com.bamabin.tv_app.ui.widgeta.EpisodeBox
+import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
-    navHostController: NavHostController,
     context: Context = LocalContext.current,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        
+    }
+    
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
 
@@ -131,9 +150,12 @@ fun PlayerScreen(
     val showAudioAlert by viewModel.showAudioAlert.collectAsState()
     val showSubtitleAlert by viewModel.showSubtitleAlert.collectAsState()
     val showQualitiesAlert by viewModel.showQualityAlert.collectAsState()
-    val subtitleStyle by viewModel.subtitleStyle.collectAsState()
+    val textColor by viewModel.textColor.collectAsState()
+    val bgColor by viewModel.bgColor.collectAsState()
+    val fontId by viewModel.fontId.collectAsState()
     val aspectRatio by viewModel.aspectRatio.collectAsState()
     val subtitleSize by viewModel.subtitleSize.collectAsState()
+    val subtitleText by viewModel.subtitleText.collectAsState()
     val subtitles = viewModel.subtitles.toList()
     val audios = viewModel.audios.toList()
 
@@ -175,102 +197,24 @@ fun PlayerScreen(
                 false
             }
     ) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = {
-                StyledPlayerView(context).apply {
-                    player = viewModel.player
-                    resizeMode = aspectRatio
-                    useController = false
-
-                    subtitleStyle?.let {
-                        subtitleView?.setStyle(it)
-                    }
-                    subtitleView?.setFixedTextSize(1, subtitleSize)
-                }
-            },
-            update = {view ->
-                view.player = viewModel.player
-                view.resizeMode = aspectRatio
-                subtitleStyle?.let {
-                    view.subtitleView?.setStyle(it)
-                }
-                view.subtitleView?.setFixedTextSize(1, subtitleSize)
-            }
+        
+        ExoPlayerWithCustomSubtitles(
+            player = viewModel.player,
+            subtitleText = subtitleText,
+            aspectRatio = aspectRatio,
+            textColor = textColor,
+            bgColor = bgColor,
+            fontId = fontId,
+            fontSize = subtitleSize.sp
         )
 
-        Row(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .graphicsLayer(alpha = centerOptionsAlpha),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            IconButton(
-                colors = ButtonDefaults.colors(
-                    containerColor = Color.Transparent,
-                    focusedContainerColor = Color.White.copy(0.3f),
-                ),
+        if (isLoading) {
+            CircularProgressIndicator(
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(CircleShape)
-                    .focusProperties { canFocus = !showSetting && !showSeasons },
-                onClick = { viewModel.forward() }) {
-                Icon(
-                    imageVector = Icons.Filled.FastForward,
-                    contentDescription = "",
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(48.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            } else {
-                IconButton(
-                    colors = ButtonDefaults.colors(
-                        containerColor = Color.Transparent,
-                        focusedContainerColor = Color.White.copy(0.3f),
-                    ),
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(48.dp)
-                        .focusRequester(defaultFocusRequester)
-                        .focusProperties { canFocus = !showSetting && !showSeasons },
-                    onClick = { viewModel.playPause() }) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = "",
-                        tint = Color.White,
-                        modifier = Modifier.size(48.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            IconButton(
-                colors = ButtonDefaults.colors(
-                    containerColor = Color.Transparent,
-                    focusedContainerColor = Color.White.copy(0.3f),
-                ),
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .focusProperties { canFocus = !showSetting && !showSeasons },
-                onClick = { viewModel.reward() }) {
-                Icon(
-                    imageVector = Icons.Filled.FastRewind,
-                    contentDescription = "",
-                    tint = Color.White,
-                    modifier = Modifier.size(56.dp)
-                )
-            }
+                    .align(Alignment.Center),
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
         Box(
@@ -398,6 +342,101 @@ fun PlayerScreen(
                     .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.changeAspectRatio() }) {
                 Icon(imageVector = Icons.Outlined.AspectRatio, contentDescription = "", tint = Color.White)
+            }
+
+            IconButton(
+                colors = ButtonDefaults.colors(
+                    containerColor = Color.Transparent,
+                    focusedContainerColor = Color.White.copy(0.3f),
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 48.dp)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
+                onClick = { viewModel.reward() }) {
+                Icon(
+                    imageVector = Icons.Filled.FastRewind,
+                    contentDescription = "",
+                    tint = Color.White,
+                )
+            }
+
+            IconButton(
+                colors = ButtonDefaults.colors(
+                    containerColor = Color.Transparent,
+                    focusedContainerColor = Color.White.copy(0.3f),
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 96.dp)
+                    .focusRequester(defaultFocusRequester)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
+                onClick = {
+                    if (!isLoading)
+                        viewModel.playPause()
+                }) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = "",
+                    tint = Color.White,
+                )
+            }
+
+            IconButton(
+                colors = ButtonDefaults.colors(
+                    containerColor = Color.Transparent,
+                    focusedContainerColor = Color.White.copy(0.3f),
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 144.dp)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
+                onClick = { viewModel.forward() }) {
+                Icon(
+                    imageVector = Icons.Filled.FastForward,
+                    contentDescription = "",
+                    tint = Color.White,
+                )
+            }
+
+            if (viewModel.isSeries) {
+                IconButton(
+                    colors = ButtonDefaults.colors(
+                        containerColor = Color.Transparent,
+                        focusedContainerColor = Color.White.copy(0.3f),
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 192.dp)
+                        .focusProperties { canFocus = !showSetting && !showSeasons },
+                    onClick = { viewModel.goToNextEpisode() }) {
+                    Icon(
+                        imageVector = Icons.Filled.SkipNext,
+                        contentDescription = "",
+                        tint = Color.White,
+                    )
+                }
+            }
+
+            IconButton(
+                colors = ButtonDefaults.colors(
+                    containerColor = Color.Transparent,
+                    focusedContainerColor = Color.White.copy(0.3f),
+                ),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = if (viewModel.isSeries) 240.dp else 192.dp)
+                    .focusProperties { canFocus = !showSetting && !showSeasons },
+                onClick = {
+                    try {
+                        launcher.launch(viewModel.getIntent())
+                    } catch (_: Exception) {}
+                }) {
+                Icon(
+                    imageVector = Icons.Filled.LiveTv,
+                    contentDescription = "",
+                    tint = Color.White,
+                )
             }
 
             IconButton(
@@ -1013,5 +1052,136 @@ private fun Seasons(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ExoPlayerWithCustomSubtitles(player: ExoPlayer, subtitleText: String, aspectRatio: Int, textColor: Color, bgColor: Color, fontSize: TextUnit, fontId: Int) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        ExoPlayerView(player, aspectRatio)
+        SubtitleOverlay(
+            subtitleText = subtitleText,
+            modifier = Modifier
+                .fillMaxSize()
+                .align(Alignment.BottomCenter),
+            textColor = textColor,
+            bgColor = bgColor,
+            fontSize = fontSize,
+            fontId = fontId
+        )
+    }
+}
+
+@Composable
+fun ExoPlayerView(player: ExoPlayer, aspectRatio: Int) {
+    val context = LocalContext.current
+
+    AndroidView(
+        modifier = Modifier.fillMaxSize(),
+        factory = {
+            StyledPlayerView(context).apply {
+                this.player = player
+                useController = false
+                resizeMode = aspectRatio
+                subtitleView?.visibility = GONE
+            }
+        },
+        update = {
+            it.resizeMode = aspectRatio
+            it.player = player
+        }
+    )
+}
+
+@Composable
+fun SubtitleOverlay(subtitleText: String, modifier: Modifier, textColor: Color, bgColor: Color, fontSize: TextUnit, fontId: Int) {
+    val context = LocalContext.current
+
+    Box(modifier = modifier, contentAlignment = Alignment.BottomCenter) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawTextWithStroke(
+                text = subtitleText,
+                color = textColor,
+                strokeColor = Color.Black,
+                bgColor = bgColor,
+                strokeWidth = 15f,
+                fontSize = fontSize,
+                typeface = ResourcesCompat.getFont(context, fontId)!!
+            )
+        }
+    }
+}
+
+private fun DrawScope.drawTextWithStroke(
+    text: String,
+    color: Color,
+    strokeColor: Color,
+    bgColor: Color,
+    strokeWidth: Float,
+    fontSize: TextUnit,
+    typeface: Typeface
+) {
+    val paint = androidx.compose.ui.graphics.Paint().asFrameworkPaint().apply {
+        isAntiAlias = true
+        textSize = fontSize.toPx()
+        style = android.graphics.Paint.Style.STROKE
+        this.strokeWidth = strokeWidth
+        this.color = strokeColor.toArgb()
+        strokeJoin = android.graphics.Paint.Join.ROUND
+        this.typeface = typeface
+    }
+
+    val textPaint = androidx.compose.ui.graphics.Paint().asFrameworkPaint().apply {
+        isAntiAlias = true
+        textSize = fontSize.toPx()
+        this.color = color.toArgb()
+        this.typeface = typeface
+    }
+
+
+    val textLines = text.split("\n")
+    val canvasWidth = size.width
+    val canvasHeight = size.height
+    val lineHeight = paint.textSize
+    var yPosition = canvasHeight - 8.dp.toPx() - lineHeight
+
+    textLines.reversed().forEach { line ->
+        val textWidth = paint.measureText(line)
+
+        val backgroundLeft = canvasWidth / 2 - textWidth / 2 - 16.dp.toPx()
+        val backgroundTop = yPosition - lineHeight + 2.dp.toPx()
+        val backgroundRight = canvasWidth / 2 + textWidth / 2 + 10.dp.toPx()
+        val backgroundBottom = backgroundTop + lineHeight + 16.dp.toPx()
+
+        if (text.trim().isNotEmpty()) {
+            drawRect(
+                color = bgColor,
+                topLeft = androidx.compose.ui.geometry.Offset(backgroundLeft, backgroundTop),
+                size = androidx.compose.ui.geometry.Size(
+                    width = backgroundRight - backgroundLeft,
+                    height = backgroundBottom - backgroundTop
+                )
+            )
+        }
+
+        drawIntoCanvas { canvas ->
+            canvas.nativeCanvas.drawText(
+                line,
+                canvasWidth / 2 - textWidth / 2,
+                yPosition,
+                paint
+            )
+        }
+
+        drawIntoCanvas { canvas ->
+            canvas.nativeCanvas.drawText(
+                line,
+                canvasWidth / 2 - textWidth / 2,
+                yPosition,
+                textPaint
+            )
+        }
+
+        yPosition -= lineHeight + 16.dp.toPx()
     }
 }

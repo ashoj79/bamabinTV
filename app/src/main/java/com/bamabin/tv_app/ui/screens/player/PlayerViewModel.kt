@@ -2,10 +2,13 @@ package com.bamabin.tv_app.ui.screens.player
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.CountDownTimer
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -24,6 +27,7 @@ import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory
+import com.google.android.exoplayer2.text.Cue
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionOverrides
 import com.google.android.exoplayer2.trackselection.TrackSelectionOverrides.TrackSelectionOverride
@@ -86,14 +90,20 @@ class PlayerViewModel @Inject constructor(
     private val _currentPosition = MutableStateFlow(0f)
     val currentPosition: StateFlow<Float> = _currentPosition
 
-    private val _subtitleStyle = MutableStateFlow<CaptionStyleCompat?>(null)
-    val subtitleStyle: StateFlow<CaptionStyleCompat?> = _subtitleStyle
-
     private val _subtitleSize = MutableStateFlow(34f)
     val subtitleSize: StateFlow<Float> = _subtitleSize
 
     private val _aspectRatio = MutableStateFlow(AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH)
     val aspectRatio: StateFlow<Int> = _aspectRatio
+
+    private val _textColor = MutableStateFlow(Color.White)
+    val textColor: StateFlow<Color> = _textColor
+
+    private val _bgColor = MutableStateFlow(Color.Black)
+    val bgColor: StateFlow<Color> = _bgColor
+
+    private val _fontId = MutableStateFlow(R.font.iransans)
+    val fontId: StateFlow<Int> = _fontId
 
     private val _currentPlaybackSpeed = MutableStateFlow(1)
     val currentPlaybackSpeed: StateFlow<Int> = _currentPlaybackSpeed
@@ -112,6 +122,9 @@ class PlayerViewModel @Inject constructor(
 
     private val _selectedSeasonIndex = MutableStateFlow(0)
     val selectedSeasonIndex: StateFlow<Int> = _selectedSeasonIndex
+
+    private val _subtitleText = MutableStateFlow("")
+    val subtitleText: StateFlow<String> = _subtitleText
 
     lateinit var player: ExoPlayer
     var duration = 1F
@@ -174,7 +187,6 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch { watchData = videosRepository.getWatchData(TempDB.selectedPost!!.id) }
         loadDefaultSubtitleConfigs()
         setupPlayer()
-        setSubtitleView()
     }
 
     fun showController() {
@@ -398,28 +410,38 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun showSeasons() {
-        player.pause()
+        if (player.isPlaying) player.pause()
         _selectedSeasonIndex.value = seasonIndex
         _showSeasons.value = true
+    }
+
+    fun hideSeasons() {
+        try {
+            if (!isEnd) player.play()
+        } catch (_: Exception){}
+        _showSeasons.value = false
     }
 
     fun changeSelectedSeason(index: Int) {
         _selectedSeasonIndex.value = index
     }
 
-    fun changeEpisode(index: Int) {
+    fun changeEpisode(index: Int, season: Int = -1) {
+        val newSeason = if (season > -1) season else _selectedSeasonIndex.value
+
         val data =
             TempDB.selectedPost!!.seasons!![seasonIndex].episodes[episodeIndex].items.getItemInfo(
                 itemIndex
             )
         val newItemIndex =
-            TempDB.selectedPost!!.seasons!![_selectedSeasonIndex.value].episodes[index].items.getSimilarIndex(
+            TempDB.selectedPost!!.seasons!![newSeason].episodes[index].items.getSimilarIndex(
                 data
             )
         if (newItemIndex == -1) return
 
+        _ready.value = false
         _showSeasons.value = false
-        seasonIndex = _selectedSeasonIndex.value
+        seasonIndex = newSeason
         episodeIndex = index
         itemIndex = newItemIndex
 
@@ -437,33 +459,55 @@ class PlayerViewModel @Inject constructor(
         setupPlayer()
     }
 
+    fun goToNextEpisode() {
+        if (!TempDB.selectedPost!!.isSeries) return
+
+        var newSeasonIndex = -1
+        var newEpisodeIndex = -1
+        if (TempDB.selectedPost!!.seasons!![seasonIndex].episodes.lastIndex > episodeIndex) {
+            newSeasonIndex = seasonIndex
+            newEpisodeIndex = episodeIndex + 1
+        } else if (seasonIndex > 0) {
+            newSeasonIndex = seasonIndex - 1
+            newEpisodeIndex = 0
+        }
+
+        if (newSeasonIndex > -1 && newEpisodeIndex > -1) {
+            changeEpisode(newEpisodeIndex, newSeasonIndex)
+        }
+    }
+
+    fun getIntent(): Intent {
+        player.pause()
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndTypeAndNormalize(Uri.parse(getPlayLink()), "video/*")
+        }
+
+        return Intent.createChooser(intent, "پلیر را انتخاب کنید")
+    }
+
     private fun setSubtitleView() {
-        val textColor = when (_currentTextColor.value) {
-            1 -> 0xFFFFEB3B
-            2 -> 0xFF2196F3
-            else -> 0xFFFFFFFF
-        }.toInt()
+        _textColor.value = Color(
+            when (_currentTextColor.value) {
+                1 -> 0xFFFFEB3B
+                2 -> 0xFF2196F3
+                else -> 0xFFFFFFFF
+            }.toInt()
+        )
 
-        val bgColor = when (_currentBgColor.value) {
-            1 -> 0x88000000
-            2 -> 0x00000000
-            else -> 0xFF000000
-        }.toInt()
+        _bgColor.value = Color(
+            when (_currentBgColor.value) {
+                1 -> 0x88000000
+                2 -> 0x00000000
+                else -> 0xFF000000
+            }.toInt()
+        )
 
-        val fontId: Int = when (_currentFont.value) {
+        _fontId.value = when (_currentFont.value) {
             1 -> R.font.vazir
             2 -> R.font.dana
             else -> R.font.iransans
         }
-
-        _subtitleStyle.value = CaptionStyleCompat(
-            textColor,
-            bgColor,
-            0x00000000,
-            CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW,
-            0xFF000000.toInt(),
-            ResourcesCompat.getFont(context, fontId)
-        )
     }
 
     private fun setupPlayer() {
@@ -488,13 +532,14 @@ class PlayerViewModel @Inject constructor(
                         super.onPlaybackStateChanged(playbackState)
                         _isLoading.value = playbackState == Player.STATE_BUFFERING
                         isEnd = playbackState == Player.STATE_ENDED
+                        if (isEnd) afterEnding()
 
                         if (!isDataExtracted && playbackState == Player.STATE_READY) extractVideoInfo()
                     }
 
-                    override fun onPlayerError(error: PlaybackException) {
-                        super.onPlayerError(error)
-                        Log.i("___", error.message?:"")
+                    override fun onCues(cues: MutableList<Cue>) {
+                        super.onCues(cues)
+                        _subtitleText.value = cues.joinToString("\n") { it.text.toString() }
                     }
                 })
 
@@ -552,6 +597,7 @@ class PlayerViewModel @Inject constructor(
         val specialNames = listOf(
             "Gapfilm",
             "Alphamedia",
+            "Alpha Media",
             "Soren",
             "Qualima",
             "Namava",
@@ -631,6 +677,7 @@ class PlayerViewModel @Inject constructor(
         _currentBgColor.value = appRepository.getBgColor()
         _currentSize.value = appRepository.getSize()
         _currentFont.value = appRepository.getFont()
+        setSubtitleView()
     }
 
     private fun getPlayLink(): String {
@@ -653,6 +700,7 @@ class PlayerViewModel @Inject constructor(
         watchData?.let {
             if (
                 duration > it.time.toFloat() &&
+                it.time > 0 &&
                 previousPosition == 0L &&
                 ((TempDB.selectedPost!!.isSeries && seasonIndex == it.season && episodeIndex == it.episode) ||
                         (!TempDB.selectedPost!!.isSeries))
@@ -660,8 +708,46 @@ class PlayerViewModel @Inject constructor(
                 player.seekTo(it.time)
             }
 
-            setSubtitle(it.subtitleTrack)
-            setAudio(it.audioTrack)
+            if (it.subtitleTrack > -1) setSubtitle(it.subtitleTrack)
+            if (it.audioTrack > -1) setAudio(it.audioTrack)
+        }
+    }
+
+    private fun afterEnding()= viewModelScope.launch {
+        if (TempDB.selectedPost!!.isSeries) {
+            var newSeasonIndex = -1
+            var newEpisodeIndex = -1
+            if (TempDB.selectedPost!!.seasons!![seasonIndex].episodes.lastIndex > episodeIndex) {
+                newSeasonIndex = seasonIndex
+                newEpisodeIndex = episodeIndex + 1
+            } else if (seasonIndex > 0) {
+                newSeasonIndex = seasonIndex - 1
+                newEpisodeIndex = 0
+            } else if (watchData != null) {
+                videosRepository.deleteWatchData(watchData!!)
+            }
+
+            if (newSeasonIndex > -1 && newEpisodeIndex > -1) {
+                val newItemIndex = TempDB.selectedPost!!.seasons!![newSeasonIndex].episodes[newEpisodeIndex].items.getDefaultItemIndex()
+                val data = TempDB.selectedPost!!.seasons!![newSeasonIndex].episodes[newEpisodeIndex].items.getItemInfo(newItemIndex)
+
+                videosRepository.saveWatchData(
+                    WatchData(
+                        TempDB.selectedPost!!.id,
+                        data[0],
+                        data[1],
+                        data[2],
+                        data[3],
+                        0,
+                        seasonIndex,
+                        newEpisodeIndex
+                    )
+                )
+
+                showSeasons()
+            }
+        } else if (watchData != null) {
+            videosRepository.deleteWatchData(watchData!!)
         }
     }
 

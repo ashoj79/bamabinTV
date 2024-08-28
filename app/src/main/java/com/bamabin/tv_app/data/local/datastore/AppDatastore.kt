@@ -86,7 +86,7 @@ class AppDatastore @Inject constructor(
 
     suspend fun getSubBgColor(): Int {
         val preferences = context.datastore.data.first()
-        return preferences[subtitleBgColorKey] ?: 0
+        return preferences[subtitleBgColorKey] ?: 2
     }
 
     suspend fun setSubFont(data: Int) {
