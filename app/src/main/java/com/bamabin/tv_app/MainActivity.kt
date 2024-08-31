@@ -175,14 +175,23 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(
-                                route = "${Routes.COMMENT_FORM.name}/{id}",
+                                route = "${Routes.COMMENT_FORM.name}/{id}/{parent_id}/{username}",
                                 arguments = listOf(
                                     navArgument("id"){
                                         type = NavType.IntType
+                                    },
+                                    navArgument("parent_id"){
+                                        type = NavType.IntType
+                                    },
+                                    navArgument("username"){
+                                        type = NavType.StringType
+                                        defaultValue = ""
+                                        nullable = true
                                     }
                                 )
                             ){
-                                CommentFormScreen(navHostController)
+                                val username = it.arguments?.getString("username") ?: ""
+                                CommentFormScreen(navHostController, username)
                             }
 
                             composable(

@@ -1,7 +1,5 @@
 package com.bamabin.tv_app.ui.screens.post_details
 
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -87,6 +84,7 @@ import com.bamabin.tv_app.ui.widgeta.ErrorDialog
 import com.bamabin.tv_app.ui.widgeta.LoadingWidget
 import com.bamabin.tv_app.utils.DataResult
 import com.bamabin.tv_app.utils.Routes
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -105,23 +103,37 @@ fun PostDetailsScreen(
 
     val scrollState = rememberTvLazyListState()
     val defaultFocusRequester = remember { FocusRequester() }
+    val seasonsFocusRequester = remember { FocusRequester() }
     val showSeasons by viewModel.showSeasons.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val showLoginDialog by viewModel.showLoginDialog.collectAsState()
+    val showBuyDialog by viewModel.showBuyDialog.collectAsState()
 
     LaunchedEffect(showSeasons) {
-        if (showSeasons) scrollState.scrollToItem(8)
+        if (showSeasons) {
+            scrollState.scrollToItem(8)
+            seasonsFocusRequester.requestFocus()
+        }
     }
 
     LaunchedEffect(Unit) {
         viewModel.loadWatchData()
     }
 
+    LaunchedEffect(data) {
+        if (data is DataResult.DataSuccess) {
+            try {
+                defaultFocusRequester.requestFocus()
+            }catch (_:Exception){}
+            delay(100)
+            scrollState.scrollToItem(0)
+        }
+    }
+
     if (data is DataResult.DataLoading){
         LoadingWidget()
     } else if (data is DataResult.DataError){
-        ErrorDialog(message = data.message) {
-            viewModel.getDetails()
-        }
+        ErrorDialog(message = data.message, onCloseClick = {viewModel.closeError()}, onRetryClick = {viewModel.getDetails()})
     } else {
         data.data?.let {
             Box {
@@ -360,16 +372,10 @@ fun PostDetailsScreen(
                         Row {
                             Button(
                                 colors = ButtonDefaults.colors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    containerColor = Color.Transparent,
                                     focusedContainerColor = MaterialTheme.colorScheme.primary
                                 ),
-                                border = ButtonDefaults.border(
-                                    border = Border.None,
-                                    focusedBorder = Border(
-                                        border = BorderStroke(1.dp, Color.White),
-                                        shape = RoundedCornerShape(4.dp)
-                                    )
-                                ),
+                                border = ButtonDefaults.border(border = Border.None),
                                 shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
                                 modifier = Modifier.focusRequester(defaultFocusRequester),
                                 onClick = {
@@ -387,7 +393,8 @@ fun PostDetailsScreen(
                                 Text(
                                     text = viewModel.getPlayButtonText(),
                                     style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = Color.White
+                                        color = Color.White,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 )
                             }
@@ -397,16 +404,10 @@ fun PostDetailsScreen(
 
                                 Button(
                                     colors = ButtonDefaults.colors(
-                                        containerColor = Color.Black.copy(alpha = .5f),
-                                        focusedContainerColor = Color.Black.copy(alpha = .5f)
+                                        containerColor = Color.Transparent,
+                                        focusedContainerColor = MaterialTheme.colorScheme.primary
                                     ),
-                                    border = ButtonDefaults.border(
-                                        border = Border.None,
-                                        focusedBorder = Border(
-                                            border = BorderStroke(1.dp, Color.White),
-                                            shape = RoundedCornerShape(4.dp)
-                                        )
-                                    ),
+                                    border = ButtonDefaults.border(border = Border.None),
                                     shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
                                     onClick = {
                                         viewModel.showSeasons()
@@ -425,7 +426,8 @@ fun PostDetailsScreen(
                                     Text(
                                         text = "قسمت‌ها",
                                         style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = Color.White
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
                                         )
                                     )
                                 }
@@ -436,16 +438,10 @@ fun PostDetailsScreen(
 
                                 Button(
                                     colors = ButtonDefaults.colors(
-                                        containerColor = Color.Black.copy(alpha = .5f),
-                                        focusedContainerColor = Color.Black.copy(alpha = .5f)
+                                        containerColor = Color.Transparent,
+                                        focusedContainerColor = MaterialTheme.colorScheme.primary
                                     ),
-                                    border = ButtonDefaults.border(
-                                        border = Border.None,
-                                        focusedBorder = Border(
-                                            border = BorderStroke(1.dp, Color.White),
-                                            shape = RoundedCornerShape(4.dp)
-                                        )
-                                    ),
+                                    border = ButtonDefaults.border(border = Border.None),
                                     shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
                                     onClick = {
                                         viewModel.showMovieBottomSheet()
@@ -464,7 +460,8 @@ fun PostDetailsScreen(
                                     Text(
                                         text = "از سرگیری پخش",
                                         style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = Color.White
+                                            color = Color.White,
+                                            fontWeight = FontWeight.SemiBold
                                         )
                                     )
                                 }
@@ -479,15 +476,10 @@ fun PostDetailsScreen(
                             Button(
                                 colors = ButtonDefaults.colors(
                                     containerColor = Color.Transparent,
-                                    focusedContainerColor = Color.Transparent
+                                    focusedContainerColor = MaterialTheme.colorScheme.primary
                                 ),
-                                border = ButtonDefaults.border(
-                                    border = Border.None,
-                                    focusedBorder = Border(
-                                        border = BorderStroke(1.dp, Color.White),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                ),
+                                border = ButtonDefaults.border(border = Border.None),
+                                shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
                                 onClick = { viewModel.updateWatchlist() }) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
@@ -518,15 +510,10 @@ fun PostDetailsScreen(
                         Button(
                             colors = ButtonDefaults.colors(
                                 containerColor = Color.Transparent,
-                                focusedContainerColor = Color.Transparent
+                                focusedContainerColor = MaterialTheme.colorScheme.primary
                             ),
-                            border = ButtonDefaults.border(
-                                border = Border.None,
-                                focusedBorder = Border(
-                                    border = BorderStroke(1.dp, Color.White),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                            ),
+                            border = ButtonDefaults.border(border = Border.None),
+                            shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
                             onClick = { navHostController.navigate("${Routes.COMMENTS.name}/${it.id}/${it.title}") }) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
@@ -631,6 +618,10 @@ fun PostDetailsScreen(
                                 Spacer(modifier = Modifier.width(16.dp))
 
                                 for (i in 0 until it.seasons!!.size){
+                                    var modifier = Modifier.padding(horizontal = 4.dp)
+                                    if (i == selectedSeason)
+                                        modifier = modifier.focusRequester(seasonsFocusRequester)
+
                                     Button(
                                         colors = ButtonDefaults.colors(
                                             containerColor = if (selectedSeason == i) MaterialTheme.colorScheme.primary else Color.Transparent,
@@ -644,7 +635,7 @@ fun PostDetailsScreen(
                                             )
                                         ),
                                         shape = ButtonDefaults.shape(RoundedCornerShape(4.dp)),
-                                        modifier = Modifier.padding(horizontal = 4.dp),
+                                        modifier = modifier,
                                         onClick = { viewModel.changeSeason(i) }) {
                                         Text(
                                             text = "فصل ${it.seasons[i].name}",
@@ -669,7 +660,8 @@ fun PostDetailsScreen(
                                             seasonName = it.seasons[selectedSeason].name,
                                             thumbnail = it.bgThumbnail,
                                             width = (screenWidth.dp - 32.dp) / 4,
-                                            episode = it.seasons[selectedSeason].episodes[j]
+                                            episode = it.seasons[selectedSeason].episodes[j],
+                                            isWatched = viewModel.isEpisodeWatched(j)
                                         ) {
                                             viewModel.showEpisodeBottomSheet(j)
                                         }
@@ -700,9 +692,39 @@ fun PostDetailsScreen(
     }
 
     if (errorMessage.isNotEmpty()) {
-        ErrorDialog(message = errorMessage) {
-            viewModel.hideErrorDialog()
-        }
+        ErrorDialog(message = errorMessage, onRetryClick = {viewModel.hideDialogs()}, onCloseClick = {viewModel.hideDialogs()})
+    }
+
+    if (showLoginDialog) {
+        ErrorDialog(
+            title = "ورود به حساب کاربری",
+            message = "",
+            firstBtnText = "ورود",
+            secondBtnText = "بعداً، گشت‌و‌گذار در برنامه",
+            showTelegramChannel = false,
+            onCloseClick = { viewModel.hideDialogs() },
+            onRetryClick = {
+                viewModel.hideDialogs()
+                navHostController.navigate(Routes.LOGIN.name)
+            },
+            onSecondBtnClicked = { viewModel.hideDialogs() }
+        )
+    }
+
+    if (showBuyDialog) {
+        ErrorDialog(
+            title = "خرید اشتراک",
+            message = "شما اشتراک فعال ندارین. برای تماشای فیلم باید اشتراک خریداری کنید",
+            firstBtnText = "خرید اشتراک",
+            secondBtnText = "بعداً",
+            showTelegramChannel = false,
+            onCloseClick = { viewModel.hideDialogs() },
+            onRetryClick = {
+                viewModel.hideDialogs()
+                navHostController.navigate(Routes.SUBSCRIBE.name)
+            },
+            onSecondBtnClicked = { viewModel.hideDialogs() }
+        )
     }
 }
 
@@ -776,7 +798,9 @@ private fun ItemsBottomSheet(
                     modifier = Modifier
                         .padding(bottom = 16.dp)
                         .background(
-                            color = if (focusedItemIndex == it) MaterialTheme.colorScheme.primary else Color(0xFF2B2B2B),
+                            color = if (focusedItemIndex == it) MaterialTheme.colorScheme.primary else Color(
+                                0xFF2B2B2B
+                            ),
                             shape = RoundedCornerShape(16.dp)
                         )
                         .padding(all = 24.dp)

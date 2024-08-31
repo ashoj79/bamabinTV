@@ -31,8 +31,10 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -48,7 +50,12 @@ import com.bamabin.tv_app.data.remote.model.videos.Post
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun MovieCard(post: Post, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun MovieCard(
+    post: Post,
+    modifier: Modifier = Modifier,
+    height: Dp,
+    onClick: () -> Unit
+) {
     var isFocused by remember { mutableStateOf(false) }
     val animatedBottomMargin by animateDpAsState(
         targetValue = if (isFocused) 24.dp else 8.dp,
@@ -64,12 +71,12 @@ fun MovieCard(post: Post, modifier: Modifier = Modifier, onClick: () -> Unit) {
             .padding(horizontal = 4.dp)
             .onFocusChanged { isFocused = it.isFocused }
             .width(120.dp)
-            .height(250.dp)
+            .height(height)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(190.dp)
+                .height(height - 60.dp)
                 .border(
                     width = if (isFocused) 2.dp else 0.dp,
                     color = if (isFocused) Color.White else Color.Transparent,
@@ -82,7 +89,7 @@ fun MovieCard(post: Post, modifier: Modifier = Modifier, onClick: () -> Unit) {
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(190.dp)
+                    .height(height - 60.dp)
                     .clip(RoundedCornerShape(8.dp))
             )
 

@@ -1,7 +1,9 @@
 package com.bamabin.tv_app.ui.widgeta
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,20 +66,33 @@ fun EpisodeBox(
             .onFocusChanged { isFocused = it.isFocused },
         onClick = onClick) {
 
-        Box {
-            AsyncImage(
-                model = thumbnail,
-                contentDescription = "",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .border(
-                        width = if (isFocused) 2.dp else 0.dp,
-                        color = if (isFocused) Color.White else Color.Transparent,
-                        shape = RoundedCornerShape(8.dp)
-                    )
+        AsyncImage(
+            model = thumbnail,
+            contentDescription = "",
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(
+                    width = if (isFocused) 2.dp else 0.dp,
+                    color = if (isFocused) Color.White else Color.Transparent,
+                    shape = RoundedCornerShape(8.dp)
+                )
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "فصل $seasonName قسمت ${episode.name}",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White
+                )
             )
 
             if (isWatched) {
@@ -85,18 +100,9 @@ fun EpisodeBox(
                     imageVector = Icons.Filled.RemoveRedEye,
                     contentDescription = "",
                     tint = Color.White,
-                    modifier = Modifier.align(Alignment.BottomStart).offset(x = 8.dp, y = (-8).dp).size(16.dp)
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "فصل $seasonName قسمت ${episode.name}",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = Color.White
-            )
-        )
     }
 }

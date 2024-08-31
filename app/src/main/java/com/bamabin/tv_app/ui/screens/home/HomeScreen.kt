@@ -100,7 +100,7 @@ fun HomeScreen(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            when (menuItems[selectedMenuIndex].page) {
+            when (homeViewModel.getMenuPage()) {
                 MenuPage.GENRES -> GenresArchive(navHostController = navHostController)
                 MenuPage.SEARCH -> SearchScreen(navHostController = navHostController)
                 MenuPage.MOVIES -> PostTypeArchiveScreen(

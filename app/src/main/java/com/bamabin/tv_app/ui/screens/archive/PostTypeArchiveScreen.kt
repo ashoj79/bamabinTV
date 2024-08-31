@@ -66,7 +66,9 @@ fun PostTypeArchiveScreen(
             Text(
                 text = postType?.title ?: viewModel.title,
                 textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
                 modifier = Modifier.align(Alignment.TopCenter),
             )
 
@@ -98,7 +100,11 @@ fun PostTypeArchiveScreen(
                 }
 
                 items(viewModel.posts.size) {
-                    MovieCard(viewModel.posts[it], Modifier.padding(bottom = 20.dp)) {
+                    MovieCard(
+                        viewModel.posts[it],
+                        Modifier.padding(bottom = 20.dp),
+                        height = if (postType == null) 320.dp else 280.dp
+                    ) {
                         val id = viewModel.posts[it].id
                         navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
                     }
@@ -185,7 +191,7 @@ private fun Filters(
                 modifier = Modifier.padding(horizontal = 4.dp),
                 onClick = { postTypeArchiveViewModel.setOrder(2) }) {
                 Text(
-                    text = "بروزترین ها",
+                    text = "به‌روزترین‌ها",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = if (selectedOrder == 2) Color(0xFF3F310E) else Color.White,
                         fontWeight = FontWeight.Bold

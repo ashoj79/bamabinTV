@@ -52,6 +52,7 @@ import com.bamabin.tv_app.utils.DataResult
 @Composable
 fun CommentFormScreen(
     navHostController: NavHostController,
+    username: String,
     viewModel: CommentFormViewModel = hiltViewModel()
 ) {
     var content by remember { mutableStateOf("") }
@@ -75,7 +76,7 @@ fun CommentFormScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "ثبت نظر جدید",
+                text = if (username.isNotEmpty() && username != "null") "پاسخ به $username" else "ثبت نظر جدید",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.TopCenter),
                 style = MaterialTheme.typography.titleLarge.copy(

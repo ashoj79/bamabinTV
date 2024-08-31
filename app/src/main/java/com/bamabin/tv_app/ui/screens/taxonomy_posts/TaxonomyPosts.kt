@@ -63,6 +63,7 @@ fun TaxonomyPosts(
                 modifier = Modifier.align(Alignment.TopCenter),
                 style = MaterialTheme.typography.titleLarge.copy(
                     color = Color.White,
+                    fontWeight = FontWeight.SemiBold
                 )
             )
 
@@ -91,7 +92,7 @@ fun TaxonomyPosts(
                 }
 
                 items(viewModel.posts.size) {
-                    MovieCard(viewModel.posts[it], Modifier.padding(bottom = 20.dp)) {
+                    MovieCard(viewModel.posts[it], Modifier.padding(bottom = 20.dp), height = 320.dp) {
                         val id = viewModel.posts[it].id
                         navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
                     }
@@ -293,7 +294,7 @@ private fun Filters(
                 modifier = Modifier.padding(horizontal = 4.dp),
                 onClick = { viewModel.setOrder(2) }) {
                 androidx.tv.material3.Text(
-                    text = "بروزترین ها",
+                    text = "به‌روزترین‌ها",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         color = if (selectedOrder == 2) Color(0xFF3F310E) else Color.White,
                         fontWeight = FontWeight.Bold

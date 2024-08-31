@@ -58,13 +58,13 @@ class HomeViewModel @Inject constructor(): ViewModel() {
         MenuItem("خانه", Icons.Outlined.Home, Icons.Filled.Home, true, page = MenuPage.HOME),
         MenuItem("خرید اشتراک", Icons.Outlined.ShoppingCart, Icons.Filled.ShoppingCart, route = Routes.SUBSCRIBE.name),
         MenuItem("دسته‌بندی‌ها", Icons.Outlined.Window, Icons.Filled.Window, page = MenuPage.GENRES),
-        MenuItem("پنل کاربری", Icons.Outlined.PersonOutline, Icons.Filled.Person, page = MenuPage.PANEL),
-        MenuItem("فیلم ها", Icons.Outlined.Movie, Icons.Filled.Movie, page = MenuPage.MOVIES),
+        MenuItem("مشاهده‌های اخیر", Icons.Outlined.Menu, Icons.Filled.Menu, route = Routes.RECENTLY_VIEWED.name),
+        MenuItem("فیلم‌ها", Icons.Outlined.Movie, Icons.Filled.Movie, page = MenuPage.MOVIES),
         MenuItem("سریال‌ها", Icons.Outlined.VideoCameraBack, Icons.Filled.VideoCameraBack, page = MenuPage.SERIES),
         MenuItem("انیمیشن‌ها", R.drawable.animation, page = MenuPage.ANIMATIONS),
         MenuItem("انیمه‌ها", R.drawable.anime, page = MenuPage.ANIME),
         MenuItem("علاقه‌مندی‌ها", Icons.Outlined.Favorite, Icons.Filled.Favorite, route = Routes.WATCHLIST.name),
-        MenuItem("مشاهده‌های اخیر", Icons.Outlined.Menu, Icons.Filled.Menu, route = Routes.RECENTLY_VIEWED.name)
+        MenuItem("پنل کاربری", Icons.Outlined.PersonOutline, Icons.Filled.Person, page = MenuPage.PANEL),
     )
 
     private var loginStatus = TempDB.isLogin.value
@@ -84,5 +84,11 @@ class HomeViewModel @Inject constructor(): ViewModel() {
         loginStatus = TempDB.isLogin.value
         if (loginStatus) updateSelectedMenu(1)
         else updateSelectedMenu(2)
+    }
+
+    fun getMenuPage(): MenuPage?{
+        val items = if (loginStatus) loggedInMenuItems else notLoggedInMenuItems
+        if (_selectedMenuIndex.value > items.lastIndex) return MenuPage.HOME
+        return items[_selectedMenuIndex.value].page
     }
 }

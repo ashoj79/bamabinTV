@@ -85,7 +85,7 @@ fun MoreCard(modifier: Modifier = Modifier, onClick: () -> Unit) {
 
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = "مشاهده بیشتر",
+            text = "مشاهده‌ی بیشتر",
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = TextUnit(
                     12f,

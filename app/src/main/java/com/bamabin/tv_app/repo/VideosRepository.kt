@@ -2,7 +2,9 @@ package com.bamabin.tv_app.repo
 
 import com.bamabin.tv_app.data.local.PostType
 import com.bamabin.tv_app.data.local.database.WatchDao
+import com.bamabin.tv_app.data.local.database.WatchedEpisodeDao
 import com.bamabin.tv_app.data.local.database.model.WatchData
+import com.bamabin.tv_app.data.local.database.model.WatchedEpisode
 import com.bamabin.tv_app.data.remote.api_service.VideosApiService
 import com.bamabin.tv_app.data.remote.model.videos.HomeSection
 import com.bamabin.tv_app.data.remote.model.videos.LikeInfo
@@ -16,7 +18,8 @@ import javax.inject.Inject
 class VideosRepository @Inject constructor(
     private val connectionChecker: ConnectionChecker,
     private val videosApiService: VideosApiService,
-    private val watchDao: WatchDao
+    private val watchDao: WatchDao,
+    private val watchedEpisodeDao: WatchedEpisodeDao
 ) {
 
     suspend fun getWatchData(id: Int)= watchDao.getData(id)
@@ -27,6 +30,15 @@ class VideosRepository @Inject constructor(
             watchDao.deleteWithId(watchDao.getOldestId())
         }
         watchDao.saveOrUpdate(data.copy(updatedAt = System.currentTimeMillis()))
+    }
+
+    suspend fun getWatchedEpisodes(id: Int)= watchedEpisodeDao.getWatchedEpisodes(id)
+    suspend fun saveWatchedEpisode(watchedEpisode: WatchedEpisode) {
+        if (watchedEpisodeDao.getOtherCount(watchedEpisode.id, watchedEpisode.season, watchedEpisode.episode) >= 100){
+            val oldest = watchedEpisodeDao.getOldest()
+            watchedEpisodeDao.delete(oldest.id, oldest.season, oldest.episode)
+        }
+        watchedEpisodeDao.insert(watchedEpisode.copy(time = System.currentTimeMillis()))
     }
 
     suspend fun getHomeSections(): DataResult<List<HomeSection>> {

@@ -95,7 +95,7 @@ class AppDatastore @Inject constructor(
 
     suspend fun getSubFont(): Int {
         val preferences = context.datastore.data.first()
-        return preferences[subtitleFontKey] ?: 0
+        return preferences[subtitleFontKey] ?: 1
     }
 
     suspend fun setSubSize(data: Int) {

@@ -2,7 +2,9 @@ package com.bamabin.tv_app.ui.screens.player
 
 import android.app.Activity
 import android.content.Context
+import android.graphics.Paint
 import android.graphics.Typeface
+import android.icu.util.ULocale
 import android.view.KeyEvent
 import android.view.View.GONE
 import android.view.WindowManager
@@ -42,10 +44,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
+import androidx.compose.material.icons.filled.Forward10
 import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.outlined.AspectRatio
 import androidx.compose.material.icons.outlined.Cancel
@@ -123,6 +127,7 @@ import com.bamabin.tv_app.ui.widgeta.EpisodeBox
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ui.StyledPlayerView
 import kotlinx.coroutines.delay
+import java.util.Locale
 
 @OptIn(ExperimentalTvMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -168,11 +173,6 @@ fun PlayerScreen(
         animationSpec = TweenSpec(durationMillis = 300), label = ""
     )
 
-    val centerOptionsAlpha by animateFloatAsState(
-        targetValue = if (showController) 1f else 0f,
-        animationSpec = TweenSpec(durationMillis = 300), label = ""
-    )
-
     DisposableEffect(Unit) {
         val window = (context as Activity).window
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -194,10 +194,35 @@ fun PlayerScreen(
             .fillMaxSize()
             .focusable()
             .onKeyEvent {
-                viewModel.showController()
-                false
+                return@onKeyEvent if (showController) {
+                    viewModel.showController()
+                    false
+                } else if (showSetting) {
+                    false
+                } else {
+                    if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                        viewModel.reward()
+                        return@onKeyEvent true
+                    }
+                    if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                        viewModel.forward()
+                        return@onKeyEvent true
+                    }
+                    if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_CENTER && it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                        viewModel.playPause()
+                        return@onKeyEvent true
+                    }
+
+                    if ((it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_UP || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_DOWN) && it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                        viewModel.showController()
+                    }
+
+                    it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT || it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
+                }
             }
     ) {
+
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black))
         
         ExoPlayerWithCustomSubtitles(
             player = viewModel.player,
@@ -242,7 +267,7 @@ fun PlayerScreen(
         
         Box(modifier = Modifier
             .fillMaxWidth()
-            .height(170.dp)
+            .height(146.dp)
             .align(Alignment.BottomStart)
             .offset(y = offset)
             .background(
@@ -312,10 +337,11 @@ fun PlayerScreen(
                     interactionSource = interactiveSource,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .offset(y = 48.dp)
+                        .offset(y = 24.dp)
                         .onFocusChanged {
                             isSliderFocused = it.isFocused
                         }
+                        .focusProperties { canFocus = !showSetting && !showSeasons }
                         .focusable()
                         .onKeyEvent {
                             if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_DPAD_LEFT && it.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
@@ -329,7 +355,6 @@ fun PlayerScreen(
 
                             return@onKeyEvent false
                         }
-                        .focusProperties { canFocus = !showSetting && !showSeasons }
                 )
             }
 
@@ -356,7 +381,7 @@ fun PlayerScreen(
                     .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.reward() }) {
                 Icon(
-                    imageVector = Icons.Filled.FastRewind,
+                    imageVector = Icons.Filled.Replay10,
                     contentDescription = "",
                     tint = Color.White,
                 )
@@ -394,7 +419,7 @@ fun PlayerScreen(
                     .focusProperties { canFocus = !showSetting && !showSeasons },
                 onClick = { viewModel.forward() }) {
                 Icon(
-                    imageVector = Icons.Filled.FastForward,
+                    imageVector = Icons.Filled.Forward10,
                     contentDescription = "",
                     tint = Color.White,
                 )
@@ -439,6 +464,14 @@ fun PlayerScreen(
                     tint = Color.White,
                 )
             }
+
+            Text(
+                text = "پخش در برنامه‌‌ای دیگر",
+                style = MaterialTheme.typography.bodyMedium.copy(color = Color.White),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = if (viewModel.isSeries) 288.dp else 240.dp, bottom = 10.dp)
+            )
 
             IconButton(
                 colors = ButtonDefaults.colors(
@@ -577,6 +610,7 @@ private fun SubtitleAlert(viewModel: PlayerViewModel = hiltViewModel()) {
     }
 
     AlertDialog(
+        shape = RoundedCornerShape(8.dp),
         containerColor = Color(0xFF2B2B2B),
         onDismissRequest = {},
         confirmButton = {},
@@ -585,10 +619,42 @@ private fun SubtitleAlert(viewModel: PlayerViewModel = hiltViewModel()) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "انتخاب زیرنویس",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700, color = Color.White),
-                    textAlign = TextAlign.Center
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "انتخاب زیرنویس",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700, color = Color.White),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+
+                    IconButton(
+                        colors = ButtonDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                        border = ButtonDefaults.border(
+                            border = Border.None,
+                            focusedBorder = Border(
+                                border = BorderStroke(1.dp, Color.White)
+                            )
+                        ),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .onFocusChanged { focusedIndex = -1 },
+                        onClick = { viewModel.setSubtitle(viewModel.currentSubtitle) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Cancel,
+                            contentDescription = "",
+                            tint = Failed
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                HorizontalDivider(
+                    color = Color.Gray.copy(alpha = 0.5f)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -642,6 +708,7 @@ private fun AudioAlert(viewModel: PlayerViewModel = hiltViewModel()) {
     }
 
     AlertDialog(
+        shape = RoundedCornerShape(8.dp),
         containerColor = Color(0xFF2B2B2B),
         onDismissRequest = {},
         confirmButton = {},
@@ -649,10 +716,42 @@ private fun AudioAlert(viewModel: PlayerViewModel = hiltViewModel()) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "انتخاب صدا",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700, color = Color.White),
-                    textAlign = TextAlign.Center
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "انتخاب صدا",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700, color = Color.White),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+
+                    IconButton(
+                        colors = ButtonDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                        border = ButtonDefaults.border(
+                            border = Border.None,
+                            focusedBorder = Border(
+                                border = BorderStroke(1.dp, Color.White)
+                            )
+                        ),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .onFocusChanged { focusedIndex = -1 },
+                        onClick = { viewModel.setAudio(viewModel.currentAudio) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Cancel,
+                            contentDescription = "",
+                            tint = Failed
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                HorizontalDivider(
+                    color = Color.Gray.copy(alpha = 0.5f)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -717,10 +816,42 @@ private fun QualitiesAlert(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "انتخاب کیفیت",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700, color = Color.White),
-                    textAlign = TextAlign.Center
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "انتخاب کیفیت",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.W700, color = Color.White),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+
+                    IconButton(
+                        colors = ButtonDefaults.colors(
+                            containerColor = Color.Transparent,
+                            focusedContainerColor = Color.Transparent
+                        ),
+                        border = ButtonDefaults.border(
+                            border = Border.None,
+                            focusedBorder = Border(
+                                border = BorderStroke(1.dp, Color.White)
+                            )
+                        ),
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .onFocusChanged { focusedIndex = -1 },
+                        onClick = { onClick(selectedQuality) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Cancel,
+                            contentDescription = "",
+                            tint = Failed
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                HorizontalDivider(
+                    color = Color.Gray.copy(alpha = 0.5f)
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -949,7 +1080,8 @@ private fun Seasons(
     screenWidth: Dp,
     onSeasonClick: (index: Int) -> Unit,
     onEpisodeClick: (index: Int) -> Unit,
-    onCloseClick: () -> Unit
+    onCloseClick: () -> Unit,
+    viewModel: PlayerViewModel = hiltViewModel()
 ) {
     val defaultFocusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -1045,7 +1177,8 @@ private fun Seasons(
                             seasonName = seasons[selectedSeason],
                             thumbnail = thumbnail,
                             width = (screenWidth - 48.dp)/ 4,
-                            episode = episodes[j]
+                            episode = episodes[j],
+                            isWatched = viewModel.isEpisodeWatched(j)
                         ) {
                             onEpisodeClick(j)
                         }
@@ -1105,7 +1238,7 @@ fun SubtitleOverlay(subtitleText: String, modifier: Modifier, textColor: Color, 
                 color = textColor,
                 strokeColor = Color.Black,
                 bgColor = bgColor,
-                strokeWidth = 15f,
+                strokeWidth = 6f,
                 fontSize = fontSize,
                 typeface = ResourcesCompat.getFont(context, fontId)!!
             )

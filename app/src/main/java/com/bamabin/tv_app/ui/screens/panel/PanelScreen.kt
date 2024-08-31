@@ -407,6 +407,7 @@ private fun Requests(
     viewModel: PanelViewModel = hiltViewModel()
 ) {
     val requests = viewModel.requests
+    var isButtonFocused by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -414,7 +415,7 @@ private fun Requests(
             .padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "درخواست ها",
+            text = "درخواست‌ها",
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.titleLarge.copy(
                 color = Color.White,
@@ -443,12 +444,11 @@ private fun Requests(
                 border = Border.None
             ),
             shape = ButtonDefaults.shape(shape = RoundedCornerShape(8.dp)),
-            modifier = Modifier.align(Alignment.End),
+            modifier = Modifier.align(Alignment.End).onFocusChanged { isButtonFocused = it.isFocused },
             onClick = { navHostController.navigate(Routes.REQUEST_FORM.name) }) {
-            Text(
-                text = "ثبت درخواست جدید",
-                style = MaterialTheme.typography.bodyMedium.copy()
-            )
+            Text(text = "ثبت درخواست جدید", style = MaterialTheme.typography.bodyMedium.copy(
+                color = if (isButtonFocused) Color.White else Color.Black
+            ))
         }
 
         TvLazyColumn(
@@ -549,7 +549,7 @@ private fun Setting(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "پس زمینه زیرنویس",
+                "پس‌زمینه‌ی زیرنویس",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold
@@ -717,7 +717,7 @@ private fun Setting(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "اندازه زیرنویس",
+                "اندازه‌ی زیرنویس",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold

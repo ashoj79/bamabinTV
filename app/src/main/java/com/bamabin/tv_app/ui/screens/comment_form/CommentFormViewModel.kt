@@ -17,13 +17,14 @@ class CommentFormViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ): ViewModel() {
     private val id: Int = savedStateHandle["id"]!!
+    private val parentId: Int = savedStateHandle["parent_id"]!!
 
     private val _result = MutableStateFlow<DataResult<Any>?>(null)
     val result: StateFlow<DataResult<Any>?> = _result
 
     fun saveComment(content: String, hasSpoil: Boolean) = viewModelScope.launch {
         _result.value = DataResult.DataLoading()
-        _result.value = repository.addComment(id, content, hasSpoil)
+        _result.value = repository.addComment(id, content, hasSpoil, parentId)
     }
 
     fun retry() {

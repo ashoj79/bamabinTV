@@ -26,6 +26,7 @@ interface CommentApiService {
     suspend fun addComment(
         @Path("post_id") id: Int,
         @Field("content_comment") content: String,
-        @Field("spoil_comment") hasSpoil: Int
+        @Field("spoil_comment") hasSpoil: Int,
+        @Field("parent_comment_id") parentId: Int
     )
 }

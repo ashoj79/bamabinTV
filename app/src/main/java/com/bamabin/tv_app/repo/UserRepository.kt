@@ -1,6 +1,8 @@
 package com.bamabin.tv_app.repo
 
 import com.bamabin.tv_app.data.local.TempDB
+import com.bamabin.tv_app.data.local.database.WatchDao
+import com.bamabin.tv_app.data.local.database.WatchedEpisodeDao
 import com.bamabin.tv_app.data.local.datastore.AppDatastore
 import com.bamabin.tv_app.data.remote.api_service.UserApiService
 import com.bamabin.tv_app.data.remote.model.user.InviteInfo
@@ -17,6 +19,8 @@ class UserRepository @Inject constructor(
     private val connectionChecker: ConnectionChecker,
     private val userApiService: UserApiService,
     private val appDatastore: AppDatastore,
+    private val watchDao: WatchDao,
+    private val watchedEpisodeDao: WatchedEpisodeDao
 ) {
     suspend fun loginWithUsername(username: String, password: String): DataResult<Any> {
         return try {
@@ -42,7 +46,7 @@ class UserRepository @Inject constructor(
         } catch (e: HttpException){
             DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
         } catch (e: Exception){
-            return DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+            DataResult.DataError(e.message?:"")
         }
     }
 
@@ -57,8 +61,8 @@ class UserRepository @Inject constructor(
             DataResult.DataSuccess("")
         } catch (e: HttpException){
             DataResult.DataError(e.response()?.errorBody()?.charStream()?.readText() ?: "")
-        } catch (_: Exception) {
-            DataResult.DataError("مشکلی پیش آمد لطفا مجدد امتحان کنید")
+        } catch (e: Exception) {
+            DataResult.DataError(e.message?:"")
         }
     }
 
@@ -178,6 +182,8 @@ class UserRepository @Inject constructor(
     suspend fun logout() {
         TempDB.saveVipInfo(null)
         appDatastore.setToken("")
+        watchedEpisodeDao.deleteAll()
+        watchDao.deleteAll()
         TempDB.isLogin.value = false
     }
 

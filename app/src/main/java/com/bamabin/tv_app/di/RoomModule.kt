@@ -18,4 +18,7 @@ object RoomModule {
 
     @Provides
     fun provideWatchDao(db: BamabinDB) = db.getWatchDao()
+
+    @Provides
+    fun provideWatchedEpisodeDao(db: BamabinDB) = db.getWatchedEpisodeDa()
 }

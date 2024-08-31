@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,6 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +66,13 @@ fun CommentsScreen(
 ) {
     val result by viewModel.result.collectAsState()
     val isLogin by TempDB.isLogin.collectAsState()
+
+    val defaultFocusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        if (isLogin)
+            defaultFocusRequester.requestFocus()
+    }
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -115,8 +125,8 @@ fun CommentsScreen(
                     border = Border.None
                 ),
                 shape = ButtonDefaults.shape(shape = RoundedCornerShape(8.dp)),
-                modifier = Modifier.align(Alignment.End),
-                onClick = { navHostController.navigate("${Routes.COMMENT_FORM.name}/${viewModel.id}") }) {
+                modifier = Modifier.align(Alignment.End).focusRequester(defaultFocusRequester),
+                onClick = { navHostController.navigate("${Routes.COMMENT_FORM.name}/${viewModel.id}/0/null") }) {
                 Text(
                     text = "ثبت نظر",
                     style = MaterialTheme.typography.bodyMedium
@@ -130,7 +140,10 @@ fun CommentsScreen(
                     CommentRow(
                         comment = result.data!![it],
                         onLikeClick = { viewModel.like(result.data!![it].id) },
-                        onDislikeClick = { viewModel.dislike(result.data!![it].id) }
+                        onDislikeClick = { viewModel.dislike(result.data!![it].id) },
+                        onReplyClick = {
+                            navHostController.navigate("${Routes.COMMENT_FORM.name}/${viewModel.id}/${result.data!![it].id}/${result.data!![it].author}")
+                        }
                     )
                 }
             }
@@ -150,6 +163,7 @@ private fun CommentRow(
     comment: Comment,
     onLikeClick: () -> Unit,
     onDislikeClick: () -> Unit,
+    onReplyClick: () -> Unit
 ) {
     var showText by remember { mutableStateOf(!comment.hasSpoil) }
     var isLiked by remember { mutableStateOf(false) }
@@ -231,6 +245,24 @@ private fun CommentRow(
         }
 
         Spacer(modifier = Modifier.width(24.dp))
+
+        Button(
+            colors = ButtonDefaults.colors(
+                containerColor = Color.Gray,
+                focusedContainerColor = MaterialTheme.colorScheme.primary,
+            ),
+            border = ButtonDefaults.border(
+                border = Border.None
+            ),
+            shape = ButtonDefaults.shape(shape = RoundedCornerShape(8.dp)),
+            onClick = onReplyClick) {
+            Text(
+                text = "پاسخ",
+                style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
 
         if (showText) {
             Column(

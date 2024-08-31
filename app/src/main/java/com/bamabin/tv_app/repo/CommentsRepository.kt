@@ -46,12 +46,12 @@ class CommentsRepository @Inject constructor(
         }
     }
 
-    suspend fun addComment(postId: Int, content: String, hasSpoil: Boolean): DataResult<Any> {
+    suspend fun addComment(postId: Int, content: String, hasSpoil: Boolean, parentId: Int): DataResult<Any> {
         return try {
             if (!connectionChecker.isConnect())
                 return DataResult.DataError("لطفا اتصال اینترنت خود را بررسی کنید")
 
-            apiService.addComment(postId, content, if (hasSpoil) 1 else 0)
+            apiService.addComment(postId, content, if (hasSpoil) 1 else 0, parentId)
 
             DataResult.DataSuccess("")
         } catch (e: HttpException){

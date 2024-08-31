@@ -57,7 +57,7 @@ fun RecentlyViewedScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "مشاهده های اخیر",
+                text = "مشاهده‌های اخیر",
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.TopCenter),
                 style = MaterialTheme.typography.titleLarge.copy(
@@ -95,7 +95,7 @@ fun RecentlyViewedScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        MovieCard(post = postsResult.data!![it]) {
+                        MovieCard(post = postsResult.data!![it], height = 250.dp) {
                             navHostController.navigate("${Routes.POST_DETAILS.name}/${postsResult.data!![it].id}")
                         }
 

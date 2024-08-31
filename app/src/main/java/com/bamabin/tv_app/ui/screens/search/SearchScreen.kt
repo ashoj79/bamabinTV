@@ -185,7 +185,7 @@ fun SearchScreen(
                     contentPadding = PaddingValues(top = 40.dp, end = 16.dp, start = 16.dp)
                 ) {
                     items(it.data!!.size) {index ->
-                        MovieCard(it.data[index], Modifier.padding(bottom = 20.dp)) {
+                        MovieCard(it.data[index], Modifier.padding(bottom = 20.dp), height = 280.dp) {
                             val id = it.data[index].id
                             navHostController.navigate("${Routes.POST_DETAILS.name}/$id")
                         }
@@ -196,7 +196,7 @@ fun SearchScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "محبوب ترین جستجو",
+                text = "محبوب‌‌ترین جستجوها",
                 style = MaterialTheme.typography.bodyLarge.copy(
                     color = Color.White,
                     fontWeight = FontWeight.W600

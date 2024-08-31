@@ -50,7 +50,7 @@ class PanelViewModel @Inject constructor(
     val menuItems = mapOf(
         "حساب کاربری" to Icons.Outlined.AccountCircle,
         "درخواست فیلم و سریال" to Icons.Outlined.ContentCopy,
-        "تراکنش های من" to Icons.Outlined.Star,
+        "تراکنش‌های من" to Icons.Outlined.Star,
         "کد دعوت" to Icons.Outlined.Redeem,
         "تنظیمات" to Icons.Outlined.Tune,
         "تماس با ما" to Icons.Filled.HeadsetMic,
@@ -90,7 +90,7 @@ class PanelViewModel @Inject constructor(
     private val _currentSize = MutableStateFlow(1)
     val currentSize: StateFlow<Int> = _currentSize
 
-    val backgroundColors = listOf("مشکی", "تیره کم‌رنگ", "بی‌رنگ")
+    val backgroundColors = listOf("مشکی", "تیره‌ی کم‌رنگ", "بی‌رنگ")
     val textColors = listOf("سفید", "زرد", "آبی")
     val fonts = listOf("ایران‌سنس", "وزیر متن", "دانا")
     val sizes = listOf("کوچک", "متوسط", "بزرگ")

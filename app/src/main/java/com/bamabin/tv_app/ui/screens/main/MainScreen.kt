@@ -14,6 +14,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -87,7 +90,7 @@ fun Section(
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = homeSection.name,
-            style = MaterialTheme.typography.bodyLarge
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold, fontSize = TextUnit(18f, TextUnitType.Sp))
         )
     }
 
@@ -100,7 +103,8 @@ fun Section(
                     post = homeSection.posts[it],
                     modifier = Modifier.padding(
                         start = if (it == 0) 16.dp else 0.dp,
-                    )
+                    ),
+                    height = 250.dp
                 ) {
                     val id = homeSection.posts[it].id
                     navHostController.navigate("${Routes.POST_DETAILS.name}/$id")

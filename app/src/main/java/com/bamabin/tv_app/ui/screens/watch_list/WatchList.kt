@@ -89,7 +89,7 @@ fun WatchListsScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        MovieCard(post = viewModel.posts[it]) {
+                        MovieCard(post = viewModel.posts[it], height = 280.dp) {
                             navHostController.navigate("${Routes.POST_DETAILS.name}/${viewModel.posts[it].id}")
                         }
 

@@ -1,9 +1,5 @@
 package com.bamabin.tv_app.ui.screens.post_details
 
-import android.app.DownloadManager
-import android.content.Context
-import android.net.Uri
-import android.os.Environment
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
@@ -11,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.data.local.database.model.WatchData
+import com.bamabin.tv_app.data.local.database.model.WatchedEpisode
 import com.bamabin.tv_app.data.remote.model.videos.PostDetails
 import com.bamabin.tv_app.repo.VideosRepository
 import com.bamabin.tv_app.utils.DataResult
@@ -20,7 +17,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,6 +28,7 @@ class PostDetailsViewModel @Inject constructor(
     private var selectedEpisode = -1
     private var watchData: WatchData? = null
     private var isWatched = false
+    private val watchedEpisodes = mutableListOf<WatchedEpisode>()
 
     var bottomSheetTitle = ""
         private set
@@ -54,21 +51,39 @@ class PostDetailsViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow("")
     val errorMessage:StateFlow<String> = _errorMessage
 
+    private val _showLoginDialog = MutableStateFlow(false)
+    val showLoginDialog: StateFlow<Boolean> = _showLoginDialog
+
+    private val _showBuyDialog = MutableStateFlow(false)
+    val showBuyDialog: StateFlow<Boolean> = _showBuyDialog
+
     init {
         getDetails()
     }
 
     fun getDetails() = viewModelScope.launch{
+        watchedEpisodes.clear()
+        watchedEpisodes.addAll(repository.getWatchedEpisodes(id))
         watchData = repository.getWatchData(id)
         isWatched = watchData != null
         _data.value = DataResult.DataLoading()
         _data.value = repository.getPostDetails(id)
     }
 
+    fun closeError() {
+        _data.value = DataResult.DataLoading()
+    }
+
     fun loadWatchData() = viewModelScope.launch {
         delay(1000)
+        watchedEpisodes.clear()
+        watchedEpisodes.addAll(repository.getWatchedEpisodes(id))
         watchData = repository.getWatchData(id)
         isWatched = watchData != null
+    }
+
+    fun isEpisodeWatched(index: Int): Boolean {
+        return watchedEpisodes.any { it.season == _selectedSeason.value && it.episode == index }
     }
 
     fun getPlayButtonText(): String{
@@ -111,6 +126,7 @@ class PostDetailsViewModel @Inject constructor(
             val sIndex = _data.value.data!!.seasons!!.lastIndex
             val itemIndex = _data.value.data!!.seasons!![sIndex].episodes[0].items.getDefaultItemIndex()
             isWatched = true
+            watchedEpisodes.add(WatchedEpisode(0, _data.value.data!!.id, sIndex, 0))
             return "${Routes.PLAYER.name}/$itemIndex/$sIndex/0"
         } else {
             showMovieBottomSheet()
@@ -125,6 +141,9 @@ class PostDetailsViewModel @Inject constructor(
         _bottomSheetItems.clear()
         TempDB.setSelectedPost(_data.value.data)
         isWatched = true
+        if (_data.value.data!!.isSeries){
+            watchedEpisodes.add(WatchedEpisode(0, _data.value.data!!.id, _selectedSeason.value, selectedEpisode))
+        }
         return if (_data.value.data!!.isSeries) "${Routes.PLAYER.name}/$itemIndex/${_selectedSeason.value}/$selectedEpisode" else "${Routes.PLAYER.name}/$itemIndex/-1/-1"
     }
 
@@ -140,8 +159,10 @@ class PostDetailsViewModel @Inject constructor(
 
     fun hideBottomSheet() = _bottomSheetItems.clear()
 
-    fun hideErrorDialog() {
+    fun hideDialogs() {
         _errorMessage.value = ""
+        _showBuyDialog.value = false
+        _showLoginDialog.value = false
     }
 
     fun shouldShowReplayButton() = !_data.value.data!!.isSeries && watchData != null
@@ -179,12 +200,12 @@ class PostDetailsViewModel @Inject constructor(
 
     private fun canSeeVideo(): Boolean{
         if (!TempDB.isLogin.value || TempDB.vipInfo == null) {
-            _errorMessage.value = "لطفا ابتدا وارد حساب کاربری خود شوید"
+            _showLoginDialog.value = true
             return false
         }
 
         if (!TempDB.vipInfo!!.isVip && !_data.value.data!!.isFree) {
-            _errorMessage.value = "برای تماشای ویدئو باید اشتراک خریداری کنید"
+            _showBuyDialog.value = true
             return false
         }
 

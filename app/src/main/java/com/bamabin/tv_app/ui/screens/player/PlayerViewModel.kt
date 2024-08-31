@@ -16,6 +16,7 @@ import androidx.lifecycle.viewModelScope
 import com.bamabin.tv_app.R
 import com.bamabin.tv_app.data.local.TempDB
 import com.bamabin.tv_app.data.local.database.model.WatchData
+import com.bamabin.tv_app.data.local.database.model.WatchedEpisode
 import com.bamabin.tv_app.data.remote.model.videos.EpisodeInfo
 import com.bamabin.tv_app.repo.AppRepository
 import com.bamabin.tv_app.repo.VideosRepository
@@ -182,9 +183,16 @@ class PlayerViewModel @Inject constructor(
     private var isEnd = false
     private var watchData: WatchData? = null
     private var previousPosition = 0L
+    private val watchedEpisodes = mutableListOf<WatchedEpisode>()
+
+    private val subtitleBeginSpecificChars = listOf(".", "?", "!", ",", "،", "؟", "(", ")", "«", "»", "\"", " ")
+    private val subtitleEndSpecificChars = listOf("-", " ", "(", ")", "«", "»", "\"")
 
     init {
-        viewModelScope.launch { watchData = videosRepository.getWatchData(TempDB.selectedPost!!.id) }
+        viewModelScope.launch {
+            watchData = videosRepository.getWatchData(TempDB.selectedPost!!.id)
+            watchedEpisodes.addAll(videosRepository.getWatchedEpisodes(TempDB.selectedPost!!.id))
+        }
         loadDefaultSubtitleConfigs()
         setupPlayer()
     }
@@ -314,15 +322,15 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun forward() {
-        showController()
-        player.seekForward()
+        val cPos = player.currentPosition
+        player.seekTo(if(cPos > player.duration - 11000) player.duration else cPos + 10000)
         timer?.cancel()
         startHideTimer()
     }
 
     fun reward() {
-        showController()
-        player.seekBack()
+        val cPos = player.currentPosition
+        player.seekTo(if(cPos < 11000) 0L else cPos - 10000)
         timer?.cancel()
         startHideTimer()
     }
@@ -486,6 +494,10 @@ class PlayerViewModel @Inject constructor(
         return Intent.createChooser(intent, "پلیر را انتخاب کنید")
     }
 
+    fun isEpisodeWatched(index: Int): Boolean {
+        return watchedEpisodes.any { it.season == _selectedSeasonIndex.value && it.episode == index }
+    }
+
     private fun setSubtitleView() {
         _textColor.value = Color(
             when (_currentTextColor.value) {
@@ -539,7 +551,40 @@ class PlayerViewModel @Inject constructor(
 
                     override fun onCues(cues: MutableList<Cue>) {
                         super.onCues(cues)
-                        _subtitleText.value = cues.joinToString("\n") { it.text.toString() }
+                        _subtitleText.value = cues.joinToString("\n") { cue ->
+                            val text = cue.text?.toString() ?: ""
+                            val lines = text.split("\n").toMutableList()
+                            for (l in lines.indices) {
+                                var line = lines[l]
+                                var beginChars = ""
+                                var endChars = ""
+
+                                for (i in line.indices) {
+                                    if (subtitleBeginSpecificChars.contains(line[i].toString())){
+                                        beginChars += line[i]
+                                    } else {
+                                        break
+                                    }
+                                }
+
+                                for (i in line.lastIndex downTo 0) {
+                                    if (subtitleEndSpecificChars.contains(line[i].toString())){
+                                        endChars += line[i]
+                                    } else {
+                                        break
+                                    }
+                                }
+
+                                line = line.trimStart(*beginChars.toCharArray()).trimEnd(*endChars.toCharArray())
+
+                                beginChars = beginChars.replace("(", ")").replace("«", "»").reversed()
+                                endChars = endChars.replace(")", "(").replace("»", "«").reversed()
+
+                                lines[l] = "$endChars$line$beginChars"
+                            }
+
+                            lines.joinToString("\n")
+                        }
                     }
                 })
 
@@ -557,6 +602,7 @@ class PlayerViewModel @Inject constructor(
         setPreviousWatchData()
         updateDuration()
         startHideTimer()
+        saveWatchedEpisode()
 
         audiosId.clear()
         subtitlesId.clear()
@@ -710,6 +756,21 @@ class PlayerViewModel @Inject constructor(
 
             if (it.subtitleTrack > -1) setSubtitle(it.subtitleTrack)
             if (it.audioTrack > -1) setAudio(it.audioTrack)
+        }
+    }
+
+    private fun saveWatchedEpisode()= viewModelScope.launch {
+        if (TempDB.selectedPost!!.isSeries) {
+            if (watchedEpisodes.any { it.season == seasonIndex && it.episode == episodeIndex })
+                return@launch
+
+            val watchedEpisode = WatchedEpisode(
+                id = TempDB.selectedPost!!.id,
+                season = seasonIndex,
+                episode = episodeIndex
+            )
+            videosRepository.saveWatchedEpisode(watchedEpisode)
+            watchedEpisodes.add(watchedEpisode)
         }
     }
 
