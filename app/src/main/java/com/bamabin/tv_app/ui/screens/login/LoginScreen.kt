@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +24,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,8 +41,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -59,6 +67,7 @@ import androidx.tv.material3.CardDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
+import com.bamabin.tv_app.R
 import com.bamabin.tv_app.ui.widgeta.ErrorDialog
 import com.bamabin.tv_app.ui.widgeta.LoadingDialog
 import com.bamabin.tv_app.ui.widgeta.LoadingWidget
@@ -74,6 +83,8 @@ fun LoginScreen(
     val password by viewModel.password.collectAsState()
     val qrCode by viewModel.qrCode.collectAsState()
     val loginStatus by viewModel.loginState.collectAsState()
+
+    val screenHeight = LocalConfiguration.current.screenHeightDp
 
     val usernameInteractionSource = remember { MutableInteractionSource() }
     val passwordInteractionSource = remember { MutableInteractionSource() }
@@ -136,28 +147,33 @@ fun LoginScreen(
                         withStyle(SpanStyle(color = Color.Gray, fontSize = TextUnit(14f, TextUnitType.Sp))) {
                             append("روش اول   ")
                         }
-                        append("ورود با اسکن کد QR")
+                        append("ورود با اسکن کد QR:")
                     },
                     style = MaterialTheme.typography.titleMedium.copy(Color.White)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.fillMaxHeight(0.05f))
-
                 qrCode?.let {
-                    Image(
-                        bitmap = it,
-                        contentDescription = "",
+                    Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
                             .align(Alignment.CenterHorizontally)
-                    )
+                            .height(minOf((screenHeight * 0.4).dp, 400.dp))
+                    ) {
+                        Image(
+                            bitmap = it,
+                            contentDescription = "",
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .align(Alignment.Center)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "کد بالا رو با دوربین تلفن همراهتون یا یک برنامه‌ی بارکدخوان اسکن کنین و از این طریق وارد بشین\n\n" +
+                        text = "کد بالا رو با دوربین تلفن همراهتون یا یک برنامه‌ی بارکدخوان اسکن کنین و از این طریق وارد بشین.\n\n" +
                                 "یا نشانی زیر رو توی مرورگر گوشی یا رایانه‌تون وارد کنین و اینتر رو بزنین. چند لحظه صبر کنین تا تلویزیونتون هم لاگین بشه.",
                         style = MaterialTheme.typography.titleMedium.copy(Color.White)
                     )
@@ -167,16 +183,15 @@ fun LoginScreen(
                     Text(
                         text = viewModel.link,
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.titleLarge.copy(
+                        style = TextStyle(
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = TextUnit(24f, TextUnitType.Sp)
+                            fontSize = TextUnit(24f, TextUnitType.Sp),
+                            fontFamily = FontFamily(Font(R.font.vazir, weight = FontWeight.SemiBold))
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
                 } ?: LoadingWidget(showText = false)
-
-                Spacer(modifier = Modifier.fillMaxHeight())
             }
 
             Column(
@@ -219,7 +234,7 @@ fun LoginScreen(
                         withStyle(SpanStyle(color = Color.Gray, fontSize = TextUnit(14f, TextUnitType.Sp))) {
                             append("روش دوم   ")
                         }
-                        append("ورود با نام کاربری و رمز ورود")
+                        append("ورود با نام کاربری و رمز عبور:")
                     },
                     style = MaterialTheme.typography.titleMedium.copy(Color.White)
                 )
@@ -227,7 +242,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "نام کاربری و رمز ورود حساب کاربری خود را وارد کنید",
+                    text = "نام کاربری و رمز عبور حساب کاربری خودتون را وارد کنین",
                     style = MaterialTheme.typography.titleMedium.copy(Color.White)
                 )
 
@@ -243,36 +258,35 @@ fun LoginScreen(
                         focusedBorder = Border.None
                     ),
                     onClick = { usernameFocusRequester.requestFocus() }) {
-                    BasicTextField(
+
+                    OutlinedTextField(
                         value = username,
                         onValueChange = { viewModel.username.value = it },
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White, fontSize = TextUnit(20f, TextUnitType.Sp)),
+                        label = {
+                            Text(
+                                text = "نام کاربری",
+                                style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+                            )
+                        },
                         singleLine = true,
-                        maxLines = 1,
+                        minLines = 1,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.White,
+                            fontSize = TextUnit(20f, TextUnitType.Sp),
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color(0xFFC2C2C2),
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = Color(0xFFC2C2C2),
+                        ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 40.dp)
                             .padding(top = 8.dp)
                             .align(Alignment.CenterHorizontally)
-                            .clickable(false) {}
                             .focusRequester(usernameFocusRequester)
-                    ) {
-                        OutlinedTextFieldDefaults.DecorationBox(
-                            value = username,
-                            innerTextField = it,
-                            enabled = true,
-                            singleLine = true,
-                            visualTransformation = VisualTransformation.None,
-                            interactionSource = usernameInteractionSource,
-                            label = { androidx.tv.material3.Text(text = "نام کاربری", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color(0xFFC2C2C2),
-                                focusedBorderColor = Color(0xFFC2C2C2),
-                                cursorColor = Color(0xFFC2C2C2),
-                            ),
-                            contentPadding = OutlinedTextFieldDefaults.contentPadding(),
-                        )
-                    }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -287,38 +301,35 @@ fun LoginScreen(
                         focusedBorder = Border.None
                     ),
                     onClick = { passwordFocusRequester.requestFocus() }) {
-                    BasicTextField(
+                    OutlinedTextField(
                         value = password,
                         onValueChange = { viewModel.password.value = it },
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White, fontSize = TextUnit(20f, TextUnitType.Sp)),
+                        label = {
+                            Text(
+                                text = "رمز عبور",
+                                style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+                            )
+                        },
                         singleLine = true,
-                        maxLines = 1,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        minLines = 1,
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color.White,
+                            fontSize = TextUnit(20f, TextUnitType.Sp),
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color(0xFFC2C2C2),
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            cursorColor = Color(0xFFC2C2C2),
+                        ),
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 40.dp)
                             .padding(top = 8.dp)
                             .align(Alignment.CenterHorizontally)
-                            .clickable(false) {}
                             .focusRequester(passwordFocusRequester)
-                    ) {
-                        OutlinedTextFieldDefaults.DecorationBox(
-                            value = password,
-                            innerTextField = it,
-                            enabled = true,
-                            singleLine = true,
-                            visualTransformation = PasswordVisualTransformation(),
-                            interactionSource = passwordInteractionSource,
-                            label = { androidx.tv.material3.Text(text = "رمز ورود", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color(0xFFC2C2C2),
-                                focusedBorderColor = Color(0xFFC2C2C2),
-                                cursorColor = Color(0xFFC2C2C2),
-                            ),
-                            contentPadding = OutlinedTextFieldDefaults.contentPadding(),
-                        )
-                    }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -352,5 +363,5 @@ fun LoginScreen(
         LoadingDialog()
 
     if (loginStatus is DataResult.DataError)
-        ErrorDialog(message = loginStatus?.message ?: "", onRetryClick = {viewModel.retry()}, onCloseClick = {viewModel.retry()})
+        ErrorDialog(title = loginStatus?.message ?: "", message = "", onRetryClick = {viewModel.retry()}, onCloseClick = {viewModel.retry()}, showTelegramChannel = false, showSecondBtn = false)
 }

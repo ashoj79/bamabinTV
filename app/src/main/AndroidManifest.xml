@@ -14,8 +14,9 @@
     <application
         android:name=".BamabinApp"
         android:allowBackup="true"
-        android:banner="@mipmap/ic_launcher"
-        android:icon="@mipmap/ic_launcher"
+        android:banner="@mipmap/ic_banner"
+        android:roundIcon="@mipmap/logo_launcher"
+        android:icon="@mipmap/logo_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.BamabinTV">
