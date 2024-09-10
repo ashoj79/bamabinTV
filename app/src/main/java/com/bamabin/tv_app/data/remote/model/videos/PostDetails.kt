@@ -36,6 +36,7 @@ data class PostDetails(
     val isInWatchlist: Boolean,
     @SerializedName("is_free")
     val isFree: Boolean,
+    val message: String? = null,
     @SerializedName("time")
     private val time: Int,
     @SerializedName("genres_id")

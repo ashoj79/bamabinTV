@@ -139,9 +139,9 @@ class PanelViewModel @Inject constructor(
     }
 
     fun getTextSize() = when(_currentSize.value) {
-        2 -> 48f
-        1 -> 34f
-        else -> 24f
+        2 -> 45f
+        1 -> 31f
+        else -> 21f
     }
 
     fun getTextColor() = Color(when(_currentTextColor.value) {

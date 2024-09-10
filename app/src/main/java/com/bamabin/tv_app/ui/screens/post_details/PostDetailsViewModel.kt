@@ -199,12 +199,19 @@ class PostDetailsViewModel @Inject constructor(
     }
 
     private fun canSeeVideo(): Boolean{
+        if (_data.value.data!!.message != null) {
+            _errorMessage.value = _data.value.data!!.message ?: ""
+            return false
+        }
+
+        if (_data.value.data!!.isFree) return true
+
         if (!TempDB.isLogin.value || TempDB.vipInfo == null) {
             _showLoginDialog.value = true
             return false
         }
 
-        if (!TempDB.vipInfo!!.isVip && !_data.value.data!!.isFree) {
+        if (!TempDB.vipInfo!!.isVip) {
             _showBuyDialog.value = true
             return false
         }

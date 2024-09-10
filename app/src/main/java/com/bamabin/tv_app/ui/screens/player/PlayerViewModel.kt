@@ -366,9 +366,9 @@ class PlayerViewModel @Inject constructor(
     fun setTextSize(index: Int) {
         _currentSize.value = index
         _subtitleSize.value = when (index) {
-            2 -> 48f
-            1 -> 34f
-            else -> 24f
+            2 -> 45f
+            1 -> 31f
+            else -> 21f
         }
     }
 
@@ -556,6 +556,9 @@ class PlayerViewModel @Inject constructor(
                             val lines = text.split("\n").toMutableList()
                             for (l in lines.indices) {
                                 var line = lines[l]
+                                if (line.count { it == '.' || it == ':'} > 5)
+                                    continue
+
                                 var beginChars = ""
                                 var endChars = ""
 

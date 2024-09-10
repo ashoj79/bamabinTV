@@ -32,23 +32,6 @@ class ConnectionChecker @Inject constructor(
                     result = true
             }
         }
-        if (result)
-            result=!checkVpn()
         return result
-    }
-
-    private fun checkVpn():Boolean{
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val networks: Array<Network> = cm.allNetworks
-
-        for (i in networks.indices) {
-            val caps = cm.getNetworkCapabilities(networks[i])
-            if (caps!!.hasTransport(NetworkCapabilities.TRANSPORT_VPN))
-                return true
-        }
-
-        return try {
-            cm.getNetworkInfo(ConnectivityManager.TYPE_VPN)!!.isConnectedOrConnecting
-        }catch (_:Exception){false}
     }
 }

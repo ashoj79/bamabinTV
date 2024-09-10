@@ -38,6 +38,7 @@ class RequestInterceptor @Inject constructor(
         request = request.newBuilder()
             .url(urlRequest)
             .addHeader("BAMABIN_TV", "1")
+            .addHeader("BAMABIN_PLAY_STORE", "1")
             .addHeader("BAMABIN_API_KEY", TempDB.token)
             .build()
 
